@@ -1,0 +1,38 @@
+﻿@model IRIT.EdMS.Common.Model.ViewModel.PartyOwner.PartyOwnerViewModel
+
+@{
+    ViewBag.Title = "انتخاب مدرسه";
+}
+
+<div class="row">
+    @using (Html.BeginForm(MVC.Security.Account.ActionNames.Login, MVC.Security.Account.Name, new { ViewBag.ReturnUrl, area = MVC.Security.Account.Area }, FormMethod.Post, new { @class = "form-horizontal", role = "form", id = "loginForm", autocomplete = "off" }))
+    {
+        @Html.AntiForgeryToken()
+        <div class="col-md-4 col-sm-offset-4">
+            <div class="panel  panel-default">
+                <div class="panel-heading">
+                    <strong> تغییر مدرسه</strong>
+                </div>
+                <div class="panel-body">
+                    <div class="form-group" style="margin-top: 20px;">
+                        @Html.LabelFor(m => m.OwnerId, new { @class = "col-md-3 control-label" })
+                        <div class="col-md-8">
+                            @Html.DropDownListFor(m => m.OwnerId, (SelectList)ViewBag.PartyOwners, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.OwnerId, "", new {@class = "text-danger"})
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="row">
+                        <div class="col-md-2">
+                            <button type="submit" autocomplete="off" class="btn btn-success" id="btn-login">
+                                <i class="glyphicon glyphicon-save"></i> ثبت
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+

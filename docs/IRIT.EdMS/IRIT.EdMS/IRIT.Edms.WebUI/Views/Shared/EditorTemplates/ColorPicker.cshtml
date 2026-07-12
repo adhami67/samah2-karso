@@ -1,0 +1,43 @@
+﻿@{
+    Layout = null;
+}
+
+
+@using System.Data.Entity.Migrations.Sql
+@model string
+
+@{
+    var name = this.ViewContext.ViewData.ModelMetadata.PropertyName;
+    var value = string.IsNullOrEmpty(Model) ? string.Empty : Model;
+}
+
+@(Html.Kendo().ColorPicker()
+                .Name(@name)
+                .Value(@value)
+                .Messages(msg => msg.Apply(GeneralResource.Ok))
+                .Messages(msg => msg.Cancel(GeneralResource.Cancel))
+)
+
+@*<div class="configuration k-widget k-header" style="width: 220px">
+    <span class="configHead">API Functions</span>
+    <ul class="options">
+        <li><button id="get" class="k-button">Get value</button></li>
+        <li>
+            <input id="value" value="#ff0000" style="float: none; width: 6em" />
+            <button id="set" class="k-button">Set value</button>
+        </li>
+        <li>
+            <button id="enable" class="k-button">Enable</button> or
+            <button id="disable" class="k-button">Disable</button>
+        </li>
+        <li>
+            <button id="open" class="k-button">Open</button> or
+            <button id="close" class="k-button">Close</button> the color picker
+        </li>
+    </ul>
+</div>*@
+
+@*<div class="box">
+    <div class="console"></div>
+  <input type="text" id="datepicker" name="@name" class="form-control" value="@value" dir="ltr" style="width: 100%" />
+</div>*@

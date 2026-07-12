@@ -1,0 +1,711 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Abdication" xml:space="preserve">
+    <value>استعفا</value>
+  </data>
+  <data name="AboutUs" xml:space="preserve">
+    <value>درباره ما</value>
+  </data>
+  <data name="Assignment" xml:space="preserve">
+    <value>انتساب</value>
+  </data>
+  <data name="BirthDate" xml:space="preserve">
+    <value>تاریخ تولد</value>
+  </data>
+  <data name="Brother" xml:space="preserve">
+    <value>برادر</value>
+  </data>
+  <data name="ChangeImage" xml:space="preserve">
+    <value>تغییر تصویر</value>
+  </data>
+  <data name="Child" xml:space="preserve">
+    <value>فرزند</value>
+  </data>
+  <data name="City" xml:space="preserve">
+    <value>شهر</value>
+  </data>
+  <data name="CityOfBirth" xml:space="preserve">
+    <value>شهر محل تولد</value>
+  </data>
+  <data name="Comment" xml:space="preserve">
+    <value>توضیحات</value>
+  </data>
+  <data name="Company" xml:space="preserve">
+    <value>شرکت</value>
+  </data>
+  <data name="ContactUs" xml:space="preserve">
+    <value>تماس با ما</value>
+  </data>
+  <data name="Contains" xml:space="preserve">
+    <value>در بر داشته باشد</value>
+  </data>
+  <data name="Contract" xml:space="preserve">
+    <value>قراردادي</value>
+  </data>
+  <data name="Country" xml:space="preserve">
+    <value>کشور</value>
+  </data>
+  <data name="CountryOfBirth" xml:space="preserve">
+    <value>کشور محل تولد</value>
+  </data>
+  <data name="Covenant" xml:space="preserve">
+    <value>پيماني</value>
+  </data>
+  <data name="Customer" xml:space="preserve">
+    <value>مشتري</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>حذف</value>
+  </data>
+  <data name="Deny" xml:space="preserve">
+    <value>غيرمجاز</value>
+  </data>
+  <data name="Deposal" xml:space="preserve">
+    <value>عزل </value>
+  </data>
+  <data name="Divorced" xml:space="preserve">
+    <value>مطلقه</value>
+  </data>
+  <data name="DoesNotContain" xml:space="preserve">
+    <value>در بر نداشته باشد</value>
+  </data>
+  <data name="DragColumnToGroup" xml:space="preserve">
+    <value>جهت گروه بندی ستون ها عنوان ستون را در این قسمت درگ کنید</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>ایمیل</value>
+  </data>
+  <data name="EmailCorrectly" xml:space="preserve">
+    <value>ایمیل را به شکل صحیح وارد کنید</value>
+  </data>
+  <data name="EmialUsed" xml:space="preserve">
+    <value>این ایمیل قبلا در سیستم ثبت شده است</value>
+  </data>
+  <data name="Employee" xml:space="preserve">
+    <value>کارمند</value>
+  </data>
+  <data name="EndsWith" xml:space="preserve">
+    <value>خاتمه یابد</value>
+  </data>
+  <data name="EnterInfraStructureRing" xml:space="preserve">
+    <value>لطفا نام میدان آموزشی را وارد کنید</value>
+  </data>
+  <data name="EnterInfraStructureRingKindID" xml:space="preserve">
+    <value>لطفا نوع میدان آموزشی را وارد کنید</value>
+  </data>
+  <data name="Entity" xml:space="preserve">
+    <value>موجوديت</value>
+  </data>
+  <data name="EqualsTo" xml:space="preserve">
+    <value>مساوی (=)</value>
+  </data>
+  <data name="Exit" xml:space="preserve">
+    <value>خروج</value>
+  </data>
+  <data name="Father" xml:space="preserve">
+    <value>نام پدر</value>
+  </data>
+  <data name="Female" xml:space="preserve">
+    <value>زن</value>
+  </data>
+  <data name="FinishWork" xml:space="preserve">
+    <value>پايان کار</value>
+  </data>
+  <data name="First" xml:space="preserve">
+    <value>برو به صفحه اول</value>
+  </data>
+  <data name="FirstName" xml:space="preserve">
+    <value>نام</value>
+  </data>
+  <data name="Gender" xml:space="preserve">
+    <value>جنسیت</value>
+  </data>
+  <data name="Grant" xml:space="preserve">
+    <value>مجاز</value>
+  </data>
+  <data name="GridPagingMessage" xml:space="preserve">
+    <value>{0}-{1} از مجموع {2} آیتم </value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>صفحه اصلی</value>
+  </data>
+  <data name="IDNumber" xml:space="preserve">
+    <value>شماره شناسنامه</value>
+  </data>
+  <data name="IDSerial" xml:space="preserve">
+    <value>سریال شناسنامه</value>
+  </data>
+  <data name="Inbox" xml:space="preserve">
+    <value>صندوق پیام</value>
+  </data>
+  <data name="InfraStructureRingKindID" xml:space="preserve">
+    <value>نوع میدان</value>
+  </data>
+  <data name="InfraStructureRingName" xml:space="preserve">
+    <value>نام میدان</value>
+  </data>
+  <data name="Insert" xml:space="preserve">
+    <value>جديد</value>
+  </data>
+  <data name="InvalidNationalCode" xml:space="preserve">
+    <value>کد ملی وارد شده نا معتبر می باشد</value>
+  </data>
+  <data name="IsNotEqualTo" xml:space="preserve">
+    <value>نا مساوی (&lt;&gt;)</value>
+  </data>
+  <data name="ItemsPerPage" xml:space="preserve">
+    <value>تعداد آیتم ها در هر صفحه</value>
+  </data>
+  <data name="JustNumber" xml:space="preserve">
+    <value>فقط عدد وارد کنید</value>
+  </data>
+  <data name="Last" xml:space="preserve">
+    <value>برو به آخرین صفحه</value>
+  </data>
+  <data name="LastName" xml:space="preserve">
+    <value>نام خانوادگی</value>
+  </data>
+  <data name="Male" xml:space="preserve">
+    <value>مرد</value>
+  </data>
+  <data name="ManagementRoles" xml:space="preserve">
+    <value>مدیریت نقش ها</value>
+  </data>
+  <data name="Married" xml:space="preserve">
+    <value>متاهل</value>
+  </data>
+  <data name="MilitaryServiceDoned" xml:space="preserve">
+    <value>انجام شده</value>
+  </data>
+  <data name="MilitaryServiceExemption" xml:space="preserve">
+    <value>معاف از خدمت</value>
+  </data>
+  <data name="MilitaryServiceUnDone" xml:space="preserve">
+    <value>انجام نشده</value>
+  </data>
+  <data name="MobileNo" xml:space="preserve">
+    <value>شماره موبایل</value>
+  </data>
+  <data name="Module" xml:space="preserve">
+    <value>ماژول</value>
+  </data>
+  <data name="Mother" xml:space="preserve">
+    <value>مادر</value>
+  </data>
+  <data name="NationalCode" xml:space="preserve">
+    <value>کد ملی</value>
+  </data>
+  <data name="Nationality" xml:space="preserve">
+    <value>ملیت</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>برو به صفحه بعد</value>
+  </data>
+  <data name="NickName" xml:space="preserve">
+    <value>نام مستعار</value>
+  </data>
+  <data name="Official" xml:space="preserve">
+    <value>رسمي</value>
+  </data>
+  <data name="OrganizationStructure" xml:space="preserve">
+    <value>چارت سازماني</value>
+  </data>
+  <data name="Others" xml:space="preserve">
+    <value>ساير</value>
+  </data>
+  <data name="Parents" xml:space="preserve">
+    <value>والدین</value>
+  </data>
+  <data name="Permanent" xml:space="preserve">
+    <value>دائمي</value>
+  </data>
+  <data name="Person" xml:space="preserve">
+    <value>شخص</value>
+  </data>
+  <data name="PhoneNo" xml:space="preserve">
+    <value>شماره ثابت</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>برو به صفحه قبل</value>
+  </data>
+  <data name="Profile" xml:space="preserve">
+    <value>حساب کاربری</value>
+  </data>
+  <data name="Province" xml:space="preserve">
+    <value>استان</value>
+  </data>
+  <data name="ProvinceOfBirth" xml:space="preserve">
+    <value>استان محل تولد</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>به روز رسانی</value>
+  </data>
+  <data name="Register" xml:space="preserve">
+    <value>ثبت نام</value>
+  </data>
+  <data name="RequiredMessage" xml:space="preserve">
+    <value>پر کردن این فیلد اجباری می باشد</value>
+  </data>
+  <data name="RoleStructure" xml:space="preserve">
+    <value>نقش سازماني</value>
+  </data>
+  <data name="SchoolManagementSystem" xml:space="preserve">
+    <value>سامانه مدیریت جامع مدرسه</value>
+  </data>
+  <data name="SecurityImage" xml:space="preserve">
+    <value>تصویر امنیتی</value>
+  </data>
+  <data name="Setting" xml:space="preserve">
+    <value>تنظیمات</value>
+  </data>
+  <data name="Single" xml:space="preserve">
+    <value>مجرد</value>
+  </data>
+  <data name="Sister" xml:space="preserve">
+    <value>خواهر</value>
+  </data>
+  <data name="Spouse" xml:space="preserve">
+    <value>همسر</value>
+  </data>
+  <data name="StartsWith" xml:space="preserve">
+    <value>شروع شود</value>
+  </data>
+  <data name="StringLength10" xml:space="preserve">
+    <value>تعداد کاراکتر های این فیلد باید 10 کاراکتر باشد</value>
+  </data>
+  <data name="StringLength1To10" xml:space="preserve">
+    <value>تعداد کاراکتر های این فیلد نباید کمتر از 1 و بیتشر از 10 باشد</value>
+  </data>
+  <data name="StringLength256" xml:space="preserve">
+    <value>حداکثر طول ایمیل 256 حرف است</value>
+  </data>
+  <data name="StringLength3To256" xml:space="preserve">
+    <value>تعداد کاراکتر های این فیلد نباید کمتر از 3 و بیتشر از 256 باشد</value>
+  </data>
+  <data name="StringLength8To256" xml:space="preserve">
+    <value>تعداد کاراکتر های این فیلد نباید کمتر از 8 و بیتشر از 256 باشد</value>
+  </data>
+  <data name="Student" xml:space="preserve">
+    <value>دانش آموز</value>
+  </data>
+  <data name="SubSystem" xml:space="preserve">
+    <value>زيرسيستم</value>
+  </data>
+  <data name="Supplier" xml:space="preserve">
+    <value>تامين کننده</value>
+  </data>
+  <data name="Temporary" xml:space="preserve">
+    <value>مدت دار</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>نا مشخص</value>
+  </data>
+  <data name="Update" xml:space="preserve">
+    <value>ويرايش</value>
+  </data>
+  <data name="UserManagement" xml:space="preserve">
+    <value>کاربران</value>
+  </data>
+  <data name="View" xml:space="preserve">
+    <value>مشاهده</value>
+  </data>
+  <data name="BoardOfTrustees" xml:space="preserve">
+    <value>هيات امنايي</value>
+  </data>
+  <data name="Government" xml:space="preserve">
+    <value>دولتي</value>
+  </data>
+  <data name="Private" xml:space="preserve">
+    <value>خصوصي</value>
+  </data>
+  <data name="SemiGovernment" xml:space="preserve">
+    <value>نيمه دولتي</value>
+  </data>
+  <data name="InfraStructureRingCode" xml:space="preserve">
+    <value>کد میدان</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>بازگشت</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>ثبت و بازگشت</value>
+  </data>
+  <data name="InfraStructureRingKindTitle" xml:space="preserve">
+    <value>عنوان میدان</value>
+  </data>
+  <data name="EnterSchoolsGroupName" xml:space="preserve">
+    <value>لطفا نام گروه مدارس را وارد کنید</value>
+  </data>
+  <data name="InfraStructureRingID" xml:space="preserve">
+    <value>نام میدان</value>
+  </data>
+  <data name="SchoolsGroupCode" xml:space="preserve">
+    <value>کد گروه</value>
+  </data>
+  <data name="SchoolsGroupName" xml:space="preserve">
+    <value>نام گروه</value>
+  </data>
+  <data name="Code" xml:space="preserve">
+    <value>کد</value>
+  </data>
+  <data name="FaxNo" xml:space="preserve">
+    <value>شماره فکس</value>
+  </data>
+  <data name="HomePageURL" xml:space="preserve">
+    <value>آدرس سایت</value>
+  </data>
+  <data name="IssueDate" xml:space="preserve">
+    <value>تاریخ تاسیس</value>
+  </data>
+  <data name="PostAddress" xml:space="preserve">
+    <value>کدپستی</value>
+  </data>
+  <data name="SchoolName" xml:space="preserve">
+    <value>نام مدرسه</value>
+  </data>
+  <data name="Add_successful" xml:space="preserve">
+    <value>عملیات ثبت با موفقیت انجام شد</value>
+  </data>
+  <data name="SchoolsGroupID" xml:space="preserve">
+    <value>گروه مدرسه</value>
+  </data>
+  <data name="Edit_successful" xml:space="preserve">
+    <value>عملیات ویرایش با موفقیت انجام شد</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>ویراش</value>
+  </data>
+  <data name="New" xml:space="preserve">
+    <value>جدید</value>
+  </data>
+  <data name="PeopleManagement" xml:space="preserve">
+    <value>مدیریت اشخاص</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>پاک کردن</value>
+  </data>
+  <data name="SelectPhoto" xml:space="preserve">
+    <value>انتخاب عکس</value>
+  </data>
+  <data name="NoItemToDisplay" xml:space="preserve">
+    <value>رکوردی برای نمایش وجود ندارد</value>
+  </data>
+  <data name="SaveNew" xml:space="preserve">
+    <value>ثبت و جدید</value>
+  </data>
+  <data name="EnterSchoolsName" xml:space="preserve">
+    <value>لطفا نام مدرسه را وارد کنید</value>
+  </data>
+  <data name="ErrorInRequest" xml:space="preserve">
+    <value>در عملیات درخواستی شما خطایی رخ داده</value>
+  </data>
+  <data name="Department" xml:space="preserve">
+    <value>سازمان</value>
+  </data>
+  <data name="InfraStructureRing" xml:space="preserve">
+    <value>میدان آموزشی</value>
+  </data>
+  <data name="School" xml:space="preserve">
+    <value>مدارس</value>
+  </data>
+  <data name="SchoolsGroup" xml:space="preserve">
+    <value>گروه مدارس</value>
+  </data>
+  <data name="GradeKind" xml:space="preserve">
+    <value>مقطع تحصیلی</value>
+  </data>
+  <data name="Boys" xml:space="preserve">
+    <value>پسرانه</value>
+  </data>
+  <data name="Complex" xml:space="preserve">
+    <value>مختلط</value>
+  </data>
+  <data name="Girly" xml:space="preserve">
+    <value>دخترانه</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>نام</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>عنوان</value>
+  </data>
+  <data name="Color" xml:space="preserve">
+    <value>رنگ</value>
+  </data>
+  <data name="Image" xml:space="preserve">
+    <value>تصویر</value>
+  </data>
+  <data name="ImageSizeMessage" xml:space="preserve">
+    <value>اندازه عکس باید کمتر از 32 کیلوبایت باشد</value>
+  </data>
+  <data name="ImageTypeMessage" xml:space="preserve">
+    <value>باشد jpg,PNG  پسوند عکس باید  </value>
+  </data>
+  <data name="AddInfraStructureRing" xml:space="preserve">
+    <value>افزودن میدان آموزشی</value>
+  </data>
+  <data name="EditInfraStructureRing" xml:space="preserve">
+    <value>ویرایش میدان آموزشی</value>
+  </data>
+  <data name="InfraStructureRingList" xml:space="preserve">
+    <value>فهرست میدان آموزشی</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>خیر</value>
+  </data>
+  <data name="Specifications" xml:space="preserve">
+    <value>مشخصات</value>
+  </data>
+  <data name="SureDelete" xml:space="preserve">
+    <value>آیا از حذف گزینه مورد نظر اطمینان دارید؟</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>بله</value>
+  </data>
+  <data name="Access" xml:space="preserve">
+    <value>دسترسی</value>
+  </data>
+  <data name="AddEmployee" xml:space="preserve">
+    <value>افزودن کارمند</value>
+  </data>
+  <data name="AddEmployeeStatute" xml:space="preserve">
+    <value>انتصاب کارمند به نقش</value>
+  </data>
+  <data name="AddOrganizationStructure" xml:space="preserve">
+    <value>آفزودن واحد سازمانی</value>
+  </data>
+  <data name="AddPerson" xml:space="preserve">
+    <value>افزودن شخص</value>
+  </data>
+  <data name="AddRole" xml:space="preserve">
+    <value>افزودن نقش سازمانی</value>
+  </data>
+  <data name="AddSchool" xml:space="preserve">
+    <value>افزودن مدرسه</value>
+  </data>
+  <data name="AddSchoolsGroup" xml:space="preserve">
+    <value>افزودن گروه مدارس</value>
+  </data>
+  <data name="AddUser" xml:space="preserve">
+    <value>افزودن کاربر</value>
+  </data>
+  <data name="AddUsersGroup" xml:space="preserve">
+    <value>افزودن گروه کاربر</value>
+  </data>
+  <data name="Contact_Information" xml:space="preserve">
+    <value>اطلاعات تماس</value>
+  </data>
+  <data name="EditEmployee" xml:space="preserve">
+    <value>ویرایش کارمند</value>
+  </data>
+  <data name="EditEmployeeStatute" xml:space="preserve">
+    <value>ویرایش حکم کارمند</value>
+  </data>
+  <data name="EditOrganizationStructure" xml:space="preserve">
+    <value>ویرایش  واحد سازمانی</value>
+  </data>
+  <data name="EditPerson" xml:space="preserve">
+    <value>ویرایش شخص</value>
+  </data>
+  <data name="EditRole" xml:space="preserve">
+    <value>ویرایش نقش سازمانی</value>
+  </data>
+  <data name="EditSchool" xml:space="preserve">
+    <value>ویرایش مدرسه</value>
+  </data>
+  <data name="EditSchoolsGroup" xml:space="preserve">
+    <value>ویرایش گروه مدارس</value>
+  </data>
+  <data name="EditUser" xml:space="preserve">
+    <value>ویرایش کاربر</value>
+  </data>
+  <data name="EditUsersGroup" xml:space="preserve">
+    <value>ویرایش گروه کاربر</value>
+  </data>
+  <data name="Employees" xml:space="preserve">
+    <value>کارمندان</value>
+  </data>
+  <data name="EmployeesList" xml:space="preserve">
+    <value>فهرست کارمندان</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>خطا</value>
+  </data>
+  <data name="FullCapacity" xml:space="preserve">
+    <value>ظرفیت برای این سمت تکمیل می باشد</value>
+  </data>
+  <data name="IncorrectUserPass" xml:space="preserve">
+    <value>نام کاربری یا کلمه عبور صحیح نمی باشد</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>ورود به سیستم</value>
+  </data>
+  <data name="personal_Information" xml:space="preserve">
+    <value>اطلاعات فردی</value>
+  </data>
+  <data name="PersonsList" xml:space="preserve">
+    <value>فهرست اشخاص</value>
+  </data>
+  <data name="PossibilityEntering" xml:space="preserve">
+    <value>در این لحظه امکان ورود به  سابت وجود ندارد . مراتب را با مسئولان سایت در میان بگذارید</value>
+  </data>
+  <data name="SchoolList" xml:space="preserve">
+    <value>فهرست مدارس</value>
+  </data>
+  <data name="SchoolsGroupList" xml:space="preserve">
+    <value>فهرست گروه مدراس</value>
+  </data>
+  <data name="StudentsList" xml:space="preserve">
+    <value>لیست دانش آموزان</value>
+  </data>
+  <data name="UserGroups" xml:space="preserve">
+    <value>گروه های کاربری</value>
+  </data>
+  <data name="UserList" xml:space="preserve">
+    <value>فهرست کاربران</value>
+  </data>
+  <data name="UserSettings" xml:space="preserve">
+    <value>تنظیمات کاربری</value>
+  </data>
+  <data name="UsersGroup" xml:space="preserve">
+    <value>کروه کاربران</value>
+  </data>
+  <data name="UsersGroupList" xml:space="preserve">
+    <value>فهرست گروه کاربران</value>
+  </data>
+  <data name="WorkType" xml:space="preserve">
+    <value>نوع کار</value>
+  </data>
+  <data name="WorkTypeList" xml:space="preserve">
+    <value>فهرست نوع کار</value>
+  </data>
+  <data name="AddWorkType" xml:space="preserve">
+    <value>افزودن نوع کار</value>
+  </data>
+  <data name="EditWorkType" xml:space="preserve">
+    <value>ویرایش نوع کار</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>انصراف</value>
+  </data>
+  <data name="Ok" xml:space="preserve">
+    <value>تایید</value>
+  </data>
+</root>

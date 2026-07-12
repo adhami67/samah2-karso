@@ -1,0 +1,8 @@
+﻿
+@using IRIT.Framework.Utility.Controller.NotyHelper
+@using IRIT.EdMS.WebUI.RazorHelpers
+@if (TempData.ContainsKey(Noty.TempDataKey))
+{
+     var noty = TempData[Noty.TempDataKey] as Noty;
+    @NotyBuilder.ShowNotyMessages(noty);
+}

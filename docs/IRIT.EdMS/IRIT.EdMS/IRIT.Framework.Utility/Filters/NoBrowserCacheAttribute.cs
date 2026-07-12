@@ -1,0 +1,20 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Web.Mvc;
+using IRIT.Framework.Utility.Caching;
+using IRIT.Framework.Utility.Helpers.Extentions;
+
+namespace IRIT.Framework.Utility.Filters
+{
+    public class NoBrowserCacheAttribute : ActionFilterAttribute
+    {
+        public override void OnResultExecuting(ResultExecutingContext filterContext)
+        {
+            filterContext.HttpContext.DisableBrowserCache();
+            base.OnResultExecuting(filterContext);
+        }
+    }
+}

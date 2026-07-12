@@ -1,0 +1,34 @@
+﻿@model IEnumerable<IRIT.EdMS.Common.ViewModel.SubSystemListViewModel>
+@{
+    Layout = "";
+    ViewBag.Title = "SubSystems";
+}
+<link href="~/Content/bootstrap.css" rel="stylesheet" />
+<link href="~/Content/bootstrap-rtl.css" rel="stylesheet" />
+<link href="~/Content/Site.css" rel="stylesheet" />
+
+<div class="container">
+    <div class="row" style="margin-top: 50Px; margin-right: 20px;">
+        <div class="col-lg-12">
+            <p>
+                @(Html.Kendo().DateTimePicker().Name("DtTest").Value(DateTime.Today))
+                @{int colorIndex = 1;}
+                @foreach (var subSystem in Model)
+                {
+                    string btyType = (colorIndex % 5 ) == 0 ? "btn-danger" :
+                        (colorIndex % 4) == 0 ? "btn-warning" :
+                        (colorIndex % 3) == 0 ? "btn-info" :
+                        (colorIndex % 2) == 0 ? "btn-success" :
+                        (colorIndex % 1) == 0 ? "btn-primary" : "";
+
+                    <a href="@Url.Action(@subSystem.ActionName, @subSystem.ControlerName, new { Area = @subSystem.Area })" class="btn btn-sq-lg @btyType">
+                        <i class="fa fa-user fa-5x"></i><br />
+                        @subSystem.SystemTitle <br>(@subSystem.RoleTitle)
+                    </a>
+
+                    colorIndex++;
+                }
+            </p>
+        </div>
+    </div>
+</div>
