@@ -1,0 +1,52 @@
+﻿@font-face {
+    font-family: 'iranian_sansregular';
+    src: url('Fonts/irsans.eot');
+    src: url('Fonts/irsans.eot?#iefix') format('embedded-opentype'), url('Fonts/irsans.woff2') format('woff2'), url('Fonts/irsans.woff') format('woff'), url('Fonts/irsans.ttf') format('truetype'), url('Fonts/irsans.svg#iranian_sansregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+    font-family: 'iranian_sansregular';
+    font-size: 14px;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+    max-width: 280px;
+}
+
+
+.btn-sq-lg {
+    width: 150px !important;
+    height: 150px !important;
+    margin: 10px;
+}
+
+.btn-sq {
+    width: 100px !important;
+    height: 100px !important;
+    font-size: 10px;
+}
+
+.btn-sq-sm {
+    width: 50px !important;
+    height: 50px !important;
+    font-size: 10px;
+}
+
+.btn-sq-xs {
+    width: 25px !important;
+    height: 25px !important;
+    padding: 2px;
+}

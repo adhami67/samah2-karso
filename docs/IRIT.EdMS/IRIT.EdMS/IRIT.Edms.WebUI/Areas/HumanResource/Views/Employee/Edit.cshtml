@@ -1,0 +1,96 @@
+﻿@using IRIT.Framework.Utility.Helpers
+
+@model IRIT.EdMS.HumanResource.Model.ViewModel.Employee.EmployeeViewModel
+@{
+    ViewBag.Title = GeneralResource.EditEmployee;
+}
+<div class="row">
+    <div class="col-md-12">
+        @using (Html.BeginForm(MVC.HumanResource.Employee.ActionNames.Create, MVC.HumanResource.Employee.Name, new { area = MVC.HumanResource.Name }, FormMethod.Post, new { User = "form", @class = "form-horizontal", autocomplete = "off", id = "createUserForm" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(c => c.Id)
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <strong>@GeneralResource.Specifications</strong>
+                </div>
+                <div class="panel-body">
+                    <div class="tab-content">
+                        <div class="tab-pane active" style="padding-top: 20px;" id="requiredInfo">
+                            <div class="form-group">
+                                @Html.LabelFor(m => m.PartyId, new { @class = "col-md-2 control-label" })
+                                <div class="col-md-10">
+                                    @Html.DropDownListFor(m => m.PartyId, (SelectList)ViewBag.Partys, string.Empty, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(m => m.PartyId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(m => m.EmploymentNumber, new { @class = "col-md-2 control-label" })
+                                <div class="col-md-10">
+                                    @Html.NoAutoCompleteTextBoxFor(m => m.EmploymentNumber)
+                                    @Html.ValidationMessageFor(m => m.EmploymentNumber, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(m => m.MilitaryServiceKind, new { @class = "col-md-2 control-label" })
+                                <div class="col-md-10">
+                                    @Html.DropDownListFor(m => m.MilitaryServiceKind, (SelectList)ViewBag.MilitaryServiceKinds, string.Empty, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(m => m.MilitaryServiceKind, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(m => m.MarriageStatusKind, new { @class = "col-md-2 control-label" })
+                                <div class="col-md-10">
+                                    @Html.DropDownListFor(m => m.MarriageStatusKind, (SelectList)ViewBag.MarriageStatusKinds, string.Empty, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(m => m.MarriageStatusKind, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(m => m.MilitaryServiceStartDate, new { @class = "col-md-2 control-label" })
+                                <div class="col-md-10">
+                                    @Html.EditorFor(m => m.MilitaryServiceStartDate, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(m => m.MilitaryServiceStartDate, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(m => m.MilitaryServiceFinishDate, new { @class = "col-md-2 control-label" })
+                                <div class="col-md-10">
+                                    @Html.EditorFor(m => m.MilitaryServiceFinishDate, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(m => m.MilitaryServiceFinishDate, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(m => m.Comment, new { @class = "col-md-2 control-label" })
+                                <div class="col-md-10">
+                                    @Html.NoAutoCompleteTextBoxFor(m => m.Comment)
+                                    @Html.ValidationMessageFor(m => m.Comment, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <a href="@Url.Action(MVC.HumanResource.Employee.ActionNames.Index, MVC.HumanResource.Employee.Name)" class="btn btn-danger">
+                                <i class="fa fa-lg fa-arrow-right"></i> @GeneralResource.Back
+                            </a>
+                            <button type="submit" autocomplete="off" class="btn btn-success">
+                                <i class="fa fa-lg fa-save"></i> @GeneralResource.Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        $(function () {
+            warningBeforeLoad();
+            makeUploadFile("AvatarImage");
+        });
+    </script>
+}

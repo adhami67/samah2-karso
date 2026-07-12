@@ -1,0 +1,55 @@
+﻿@font-face {
+    font-family: 'iranian_sansregular';
+    src: url('~/Content/Fonts/irsans.eot');
+    src: url('~/Content/Fonts/irsans.eot?#iefix') format('embedded-opentype'), 
+         url('~/Content/Fonts/irsans.woff2') format('woff2'), 
+         url('~/Content/Fonts/irsans.woff') format('woff'), 
+         url('~/Content/Fonts/irsans.ttf') format('truetype'), 
+         url('~/Content/Fonts/irsans.svg#iranian_sansregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+body {
+    margin: 0;
+    padding: 0px 0 0 0;
+    direction: rtl;
+    font-family: 'iranian_sansregular';
+    font-size: 14px;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+}
+
+.white-container {
+    background-color: #fff;
+    padding-top: 70px;
+}
+
+.validation-summary-errors {
+    border-radius: 2px;
+}
+
+    .validation-summary-errors ul {
+        padding: 10px 15px;
+    }
+
+        .validation-summary-errors ul li {
+            list-style: none;
+        }

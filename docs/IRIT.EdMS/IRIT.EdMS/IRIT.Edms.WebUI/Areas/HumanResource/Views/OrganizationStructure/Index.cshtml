@@ -1,0 +1,282 @@
+﻿
+@{
+    ViewBag.Title = GeneralResource.OrganizationStructure;
+}
+
+@Styles.Render("~/Content/bootstrap-dialog")
+
+<div class="panel panel-primary">
+    <div class="panel-heading">
+        <i class="fa fa-lg fa-bar-chart"></i> @GeneralResource.OrganizationStructure
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-md-5">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        @using (Html.BeginForm(MVC.HumanResource.OrganizationStructure.ActionNames.ManageOrganization, MVC.HumanResource.OrganizationStructure.Name, new { area = MVC.HumanResource.Name }))
+                        {
+                            <input type="hidden" id="hiddenNodeId" value="-1" name="hiddenNodeId" />
+                            <button type="submit" autocomplete="off" class="btn btn-success" id="btnNewOrganiz" style="visibility: collapse">
+                                <i class="fa fa-lg fa-plus"></i> @GeneralResource.AddOrganizationStructure
+                            </button>
+                            <button type="submit" autocomplete="off" class="btn btn-success" id="btnNewRole" style="visibility: collapse">
+                                <i class="fa fa-lg fa-plus"></i> @GeneralResource.AddRole
+                            </button>
+                            <button type="submit" autocomplete="off" class="btn btn-warning" id="btnEdit" style="visibility: collapse">
+                                <i class="fa fa-lg fa-edit"></i> @GeneralResource.Edit
+                            </button>
+                            <button type="button" autocomplete="off" class="btn" id="btnDelete" style="background-color: #d9534f; color: white; visibility: collapse">
+                                <i class="fa fa-lg fa-remove"></i> @GeneralResource.Delete
+                            </button>
+                        }
+                    </div>
+                    <div class="k-rtl panel-body" style="background-color: #f4f1f1">
+                        <input type="hidden" id="hiddenNodeIdForEmp" value="0" name="hiddenNodeIdForEmp" />
+                        @(Html.Kendo().TreeView()
+                              .Name("OrganizationStructureTree")
+                              .ExpandAll(true)
+                              .HtmlAttributes(new { style = "height: 482px;" })
+                              .BindTo((IEnumerable<TreeViewItemModel>)ViewBag.OrganizationStructureData)
+                              .Events(ev => ev.Select("onSelect"))
+                        )
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        @using (Html.BeginForm(MVC.HumanResource.OrganizationStructure.ActionNames.ManageEmployeeStatute, MVC.HumanResource.OrganizationStructure.Name, new { area = MVC.HumanResource.Name }))
+                        {
+                            <input type="hidden" id="hiddenOrgId" value="-1" name="hiddenOrgId" />
+                            <button type="submit" autocomplete="off" class="btn btn-success" id="btnNewEmployeeStatute" style="visibility: collapse">
+                                <i class="fa fa-lg fa-plus"></i> @GeneralResource.AddEmployee
+                            </button>
+                        }
+                    </div>
+                    <div class="k-rtl panel-body" style="background-color: #f4f1f1">
+                        @(Html.Kendo().Grid<IRIT.EdMS.HumanResource.Model.ViewModel.EmployeeStatute.EmployeeStatuteViewModel>().Name("grid_EmployeeStatute")
+                          .Columns(columns =>
+                          {
+                              columns.Bound(c => c.FirstName).Width(190);
+                              columns.Bound(c => c.LastName).Width(190);
+                              columns.Template(x => { }).ClientTemplate(
+                                  "<a class='btn btn-warning' href='" + Url.Action(MVC.HumanResource.OrganizationStructure.ActionNames.EditEmployeeStatute, MVC.HumanResource.OrganizationStructure.Name) + "?id=#= ID #'" +">"+GeneralResource.Edit+"</a>" +
+                                  "<a class='btn-danger btn' target='#= ID #'>"+GeneralResource.Deposal+"</a>");
+                          })
+                          .HtmlAttributes(new { style = "height: 480px;" })
+                          .Scrollable()
+                          .Sortable()
+                          .Filterable(flt =>
+                          {
+                              flt.Mode(GridFilterMode.Row);
+                              flt.Operators(fltOpt =>
+                              {
+                                  fltOpt.ForString(fms =>
+                                  {
+                                      fms.IsEqualTo(GeneralResource.EqualsTo);
+                                      fms.IsNotEqualTo(GeneralResource.IsNotEqualTo);
+                                      fms.StartsWith(GeneralResource.StartsWith);
+                                      fms.EndsWith(GeneralResource.EndsWith);
+                                      fms.Contains(GeneralResource.Contains);
+                                      fms.DoesNotContain(GeneralResource.DoesNotContain);
+                                  });
+                                  //fltOpt.ForDate(fms => { fms.IsEqualTo(GeneralResource.Equals); fms.IsNotEqualTo(GeneralResource.IsNotEqualTo); fms.StartsWith(GeneralResource.StartsWith); fms.EndsWith(GeneralResource.EndsWith); fms.Contains(GeneralResource.Contains); fms.DoesNotContain(GeneralResource.DoesNotContain); });
+                              });
+                          })
+                          //.Groupable(grp => { grp.Messages(gmsg => { gmsg.Empty(GeneralResource.DragColumnToGroup); }); })
+                          .Pageable(pageable => pageable.Refresh(true).PageSizes(true).ButtonCount(5).Messages(msg =>
+                          {
+                              msg.Display(GeneralResource.GridPagingMessage);
+                              msg.ItemsPerPage(GeneralResource.ItemsPerPage);
+                              msg.Refresh(GeneralResource.Refresh);
+                              msg.Last(GeneralResource.Last);
+                              msg.Next(GeneralResource.Next);
+                              msg.Previous(GeneralResource.Previous);
+                              msg.First(GeneralResource.First);
+                          }))
+                          .DataSource(dataBinding => dataBinding.Ajax().Model(model => model.Id(id => id.Id))
+                              .Read(read => read.Action(MVC.HumanResource.OrganizationStructure.ActionNames.EmployeeStatute_Read, MVC.HumanResource.OrganizationStructure.Name).Data("getRoles")))
+                        )
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script>
+        var treeview;
+
+        function onSelect(e) {
+            var data = $('#OrganizationStructureTree').data('kendoTreeView').dataItem(e.node);
+
+            if (data.id) {
+                var items = data.id.split('_');
+
+                if (items[0] === '0') {
+                    document.getElementById("btnNewOrganiz").style.visibility = "visible";
+                    document.getElementById("btnNewRole").style.visibility = "collapse";
+                    document.getElementById("btnEdit").style.visibility = "collapse";
+                    document.getElementById("btnDelete").style.visibility = "collapse";
+                    document.getElementById("btnNewEmployeeStatute").style.visibility = "collapse";
+                    $('#hiddenNodeIdForEmp').val('0');
+                } else if (items[0] === '1') {
+                    document.getElementById("btnNewOrganiz").style.visibility = "visible";
+                    document.getElementById("btnNewRole").style.visibility = "visible";
+                    document.getElementById("btnEdit").style.visibility = "visible";
+                    document.getElementById("btnDelete").style.visibility = "visible";
+                    document.getElementById("btnNewEmployeeStatute").style.visibility = "collapse";
+                    $('#hiddenNodeIdForEmp').val('0');
+                } else {
+                    document.getElementById("btnNewOrganiz").style.visibility = "collapse";
+                    document.getElementById("btnNewRole").style.visibility = "visible";
+                    document.getElementById("btnEdit").style.visibility = "visible";
+                    document.getElementById("btnDelete").style.visibility = "visible";
+                    document.getElementById("btnNewEmployeeStatute").style.visibility = "visible";
+                    $('#hiddenNodeIdForEmp').val(items[1]);
+                }
+                // for reload emp grid (ajax)
+                $("#grid_EmployeeStatute").data("kendoGrid").dataSource.read();
+            }
+        }
+
+        $(document).ready(function () {
+            treeview = $("#OrganizationStructureTree").data("kendoTreeView");
+        });
+
+        $("#btnNewOrganiz").click(function () {
+            var selected = treeview.select();
+            var item = treeview.dataItem(selected);
+
+            if (item) {
+                $('#hiddenNodeId').val('AddOrganization|' + item.id);
+            } else {
+                alert('Nothing selected');
+            }
+        });
+
+        $("#btnNewEmployeeStatute").click(function () {
+            var selected = treeview.select();
+            var item = treeview.dataItem(selected);
+
+            if (item) {
+                $('#hiddenOrgId').val('Add|' + item.id);
+            } else {
+                alert('Nothing selected');
+            }
+        });
+
+        $("#btnNewRole").click(function () {
+            var selected = treeview.select();
+            var item = treeview.dataItem(selected);
+
+            if (item) {
+                $('#hiddenNodeId').val('AddRole|' + item.id);
+            } else {
+                alert('Nothing selected');
+            }
+        });
+
+        $("#btnEdit").click(function () {
+            var selected = treeview.select();
+            var item = treeview.dataItem(selected);
+
+            if (item) {
+                $('#hiddenNodeId').val('Edit|' + item.id);
+            } else {
+                alert('Nothing selected');
+            }
+        });
+
+        function getRoles() {
+            try {
+                return { specialityIn: $('#hiddenNodeIdForEmp').val() };
+            }
+            catch (err) {
+                // alert(err.message);
+            }
+
+            return { specialityIn: '0' };
+        }
+
+        $("#btnDelete").click(function () {
+            var selected = treeview.select();
+            var item = treeview.dataItem(selected);
+
+            if (item) {
+                //$('#hiddenNodeId').val('Delete|' + item.id);
+                BootstrapDialog.show({
+                    title: '',
+                    message: 'آیا از حذف رکورد مورد نظر اطمینان دارید؟',
+                    buttons: [
+                        {
+                            label: 'بلی',
+                            action: function (dialog) {
+                                $.ajax({
+                                    type: "POST",
+                                    url: "@Url.Action(MVC.HumanResource.OrganizationStructure.ActionNames.Delete, MVC.HumanResource.OrganizationStructure.Name)",
+                                    data: { id: item.id },
+                                    cache: false,
+                                    dataType: "json",
+                                    success: function () {
+                                        dialog.close();
+                                        treeview.remove(selected);
+                                    },
+                                    error: function (jqXHR, exception) {
+                                        alert('Uncaught Error.\n' + jqXHR.responseText);
+                                    }
+                                });
+                            }
+                        }, {
+                            label: 'خیر',
+                            action: function (dialog) {
+                                dialog.close();
+                            }
+                        }
+                    ]
+                });
+            } else {
+                alert('Nothing selected');
+            }
+        });
+
+        $(document).on('click', '.btn-danger', function () {
+            var rowToDelete = $(this).closest("tr");
+            var grid = $("#grid_EmployeeStatute").data("kendoGrid");
+
+            var pkNo = $(this).attr("target");
+            var rowNo = '#row-' + pkNo;
+            BootstrapDialog.show({
+                title: '',
+                message: 'آیا از عزل شخص مورد نظر اطمینان دارید؟',
+                buttons: [{
+                    label: 'بلی',
+                    action: function (dialog) {
+                        $.ajax({
+                            type: "POST",
+                            url: "@Url.Action(MVC.HumanResource.OrganizationStructure.ActionNames.DeleteEmployeeStatute, MVC.HumanResource.OrganizationStructure.Name)",
+                            data: { id: pkNo },
+                            cache: false,
+                            dataType: "json",
+                            success: function () {
+                                dialog.close();
+                                grid.removeRow(rowToDelete);
+                            },
+                            error: function (jqXHR, exception) {
+                                alert('Uncaught Error.\n' + jqXHR.responseText);
+                            }
+                        });
+                    }
+                }, {
+                    label: 'خیر',
+                    action: function (dialog) {
+                        dialog.close();
+                    }
+                }]
+            });
+        });
+    </script>
+}

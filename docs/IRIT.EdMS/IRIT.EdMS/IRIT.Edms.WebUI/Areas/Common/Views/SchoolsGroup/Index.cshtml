@@ -1,0 +1,127 @@
+﻿@using IRIT.EdMS.Common.Model.ViewModel.SchoolsGroup
+
+@{
+    ViewBag.Title = GeneralResource.SchoolsGroup;
+}
+
+@Styles.Render("~/Content/bootstrap-dialog")
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="row">
+            <div class="col-md-5" style="padding-bottom: 10px;">
+                <a href="@Url.Action(MVC.Common.SchoolsGroup.ActionNames.Create, MVC.Common.SchoolsGroup.Name)" class="btn btn-success">
+                    <i class="fa fa-lg fa-plus"></i> @GeneralResource.New
+                </a>
+            </div>
+        </div>
+
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <i class="fa fa-lg fa-users"></i> @GeneralResource.SchoolsGroupList
+            </div>
+            <div class="k-rtl">
+                @(Html.Kendo().Grid<SchoolsGroupViewModel>().Name("grid_SchoolsGroup")
+                   .Columns(columns =>
+                   {
+                       columns.Bound(c => c.SchoolsGroupName).Width(180);
+                       columns.Bound(c => c.InfraStructureRingName).Width(160);
+                       columns.Bound(c => c.Code).Width(160);
+                       columns.Bound(c => c.Comment).Width(150);
+                       columns.Template(x => { }).ClientTemplate(
+                          "<a class='btn btn-warning' href='" + Url.Action(MVC.Common.SchoolsGroup.ActionNames.Edit, MVC.Common.SchoolsGroup.Name) + "?id=#= ID #'" + ">" + GeneralResource.Edit + "</a>" +
+                          "<a class='btn-danger btn' target='#= ID #'>" + GeneralResource.Delete + "</a>").Width(140);
+                   })
+                   .ClientDetailTemplateId("template")
+                   .HtmlAttributes(new { style = "height: 490px;" })
+                   .Scrollable()
+                   .Sortable()
+                   .Filterable(flt =>
+                   {
+                       flt.Mode(GridFilterMode.Row);
+                       flt.Operators(fltOpt =>
+                       {
+                           fltOpt.ForString(fms => { fms.IsEqualTo(GeneralResource.EqualsTo); fms.IsNotEqualTo(GeneralResource.IsNotEqualTo); fms.StartsWith(GeneralResource.StartsWith); fms.EndsWith(GeneralResource.EndsWith); fms.Contains(GeneralResource.Contains); fms.DoesNotContain(GeneralResource.DoesNotContain); });
+                           //fltOpt.ForDate(fms => { fms.IsEqualTo(GeneralResource.Equals); fms.IsNotEqualTo(GeneralResource.IsNotEqualTo); fms.StartsWith(GeneralResource.StartsWith); fms.EndsWith(GeneralResource.EndsWith); fms.Contains(GeneralResource.Contains); fms.DoesNotContain(GeneralResource.DoesNotContain); });
+                       });
+                   })
+                   .Groupable(grp => { grp.Messages(gmsg => { gmsg.Empty(GeneralResource.DragColumnToGroup); }); })
+                   .Pageable(pageable => pageable.Refresh(true).PageSizes(true).ButtonCount(5).Messages(msg => { msg.Display(GeneralResource.GridPagingMessage); msg.ItemsPerPage(GeneralResource.ItemsPerPage); msg.Refresh(GeneralResource.Refresh); msg.Last(GeneralResource.Last); msg.Next(GeneralResource.Next); msg.Previous(GeneralResource.Previous); msg.First(GeneralResource.First);
+                                                                                                                   msg.Empty(GeneralResource.NoItemToDisplay);
+                   }))
+                   .DataSource(dataBinding => dataBinding.Ajax().Model(model => model.Id(id => id.Id))
+                   .Read(read => read.Action(MVC.Common.SchoolsGroup.ActionNames.SchoolsGroup_Read, MVC.Common.SchoolsGroup.Name)))
+                   .Events(events => events.DataBound("dataBound"))
+                )
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script id="template" type="text/kendo-tmpl">
+        @(Html.Kendo().Grid<IRIT.Framework.DataModel.Common.School>()
+                        .Name("grid_#=ID#") // template expression, to be evaluated in the master context
+                        .Columns(columns =>
+                        {
+                            columns.Bound(o => o.SchoolName).Width(170).Title(GeneralResource.SchoolName);
+                            columns.Bound(o => o.Code).Width(140).Title(GeneralResource.Code);
+                            columns.Bound(o => o.IssueYear).Title(GeneralResource.IssueDate).Width(190);
+                        })
+                        .DataSource(dataSource => dataSource
+                            .Ajax()
+                            .PageSize(5)
+                            .Read(read => read.Action(MVC.Common.SchoolsGroup.ActionNames.School_Read, MVC.Common.SchoolsGroup.Name, new { schoolGroupId = "#=ID#" }))
+                        )
+                        .Pageable(pageable => pageable.Refresh(true).PageSizes(true).ButtonCount(5).Messages(msg =>
+                        {
+                            msg.Display(GeneralResource.GridPagingMessage); msg.ItemsPerPage(GeneralResource.ItemsPerPage); msg.Refresh(GeneralResource.Refresh); msg.Last(GeneralResource.Last); msg.Next(GeneralResource.Next); msg.Previous(GeneralResource.Previous); msg.First(GeneralResource.First);
+                            msg.Empty(GeneralResource.NoItemToDisplay);
+                        }))
+                        .Sortable()
+                        .ToClientTemplate())
+    </script>
+
+    <script>
+        function dataBound() {
+            // this.expandRow(this.tbody.find("tr.k-master-row").first());
+        }
+
+        $(document).on('click', '.btn-danger', function () {
+            var rowToDelete = $(this).closest("tr");
+            var grid = $("#grid_SchoolsGroup").data("kendoGrid");
+
+            var pkNo = $(this).attr("target");
+            var rowNo = '#row-' + pkNo;
+            BootstrapDialog.show({
+                title: '',
+                message: '@GeneralResource.SureDelete',
+                buttons: [{
+                    label: '@GeneralResource.Yes',
+                    action: function (dialog) {
+                        $.ajax({
+                            type: "POST",
+                            url: "@Url.Action(MVC.Common.SchoolsGroup.ActionNames.Delete, MVC.Common.SchoolsGroup.Name)",
+                            data: { id: pkNo },
+                            cache: false,
+                            dataType: "json",
+                            success: function () {
+                                dialog.close();
+                                grid.removeRow(rowToDelete);
+                            },
+                            error: function (jqXHR, exception) {
+                                alert('Uncaught Error.\n' + jqXHR.responseText);
+                            }
+                        });
+                    }
+                }, {
+                    label: '@GeneralResource.No',
+                    action: function (dialog) {
+                        dialog.close();
+                    }
+                }]
+            });
+        });
+    </script>
+}
