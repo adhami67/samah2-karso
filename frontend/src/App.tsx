@@ -4,6 +4,8 @@ import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Activities from "@/pages/Activities";
 import NewActivity from "@/pages/NewActivity";
+import ActivityDetail from "@/pages/ActivityDetail";
+
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { token } = useAuth();
@@ -40,6 +42,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <NewActivity />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/activities/:id"
+            element={
+              <ProtectedRoute>
+                <ActivityDetail />
               </ProtectedRoute>
             }
           />

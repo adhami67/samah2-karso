@@ -22,7 +22,7 @@ app.include_router(evaluations.router, prefix="/api/evaluations", tags=["evaluat
 app.include_router(reports.router, prefix="/api/reports", tags=["Reports"])
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],   # آدرس فرانت‌اند
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
