@@ -1,7 +1,5 @@
 @import "tailwindcss";
-@import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css');
 
-/* تنظیمات پایه */
 @layer base {
   :root {
     --primary: #ea580c;
@@ -36,7 +34,6 @@
   }
 }
 
-/* کلاس‌های کمکی */
 .glass-card {
   background: var(--glass-bg);
   backdrop-filter: blur(15px);

@@ -1,6 +1,7 @@
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import ParticlesBackground from "@/components/ParticlesBackground";
 import {
   LayoutDashboard,
   FileText,
@@ -28,7 +29,10 @@ export default function MainLayout() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col relative">
+      {/* ذرات پس‌زمینه */}
+      <ParticlesBackground />
+
       {/* هدر شیشه‌ای */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
@@ -60,13 +64,13 @@ export default function MainLayout() {
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2 }}
-        className="flex-1 p-3"
+        className="flex-1 p-3 relative z-10"
       >
         <Outlet />
       </motion.main>
 
       {/* منوی پایین (موبایل) */}
-      <nav className="sticky bottom-3 mx-3 mb-3 glass-card py-2 px-4 flex justify-around md:hidden">
+      <nav className="sticky bottom-3 mx-3 mb-3 glass-card py-2 px-4 flex justify-around md:hidden z-10">
         {navItems.map((item) => (
           <button
             key={item.path}
