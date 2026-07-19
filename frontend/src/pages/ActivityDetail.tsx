@@ -10,8 +10,13 @@ import {
   Calendar,
   Clock,
   ClipboardList,
+  AlertTriangle,
+  ArrowRightLeft,
+  Archive,
+  Timer,
 } from "lucide-react";
 
+// اینترفیس‌ها (بدون تغییر)
 interface Activity {
   id: string;
   title: string;
@@ -21,7 +26,6 @@ interface Activity {
   due_at: string | null;
   workspace_id: string;
 }
-
 interface Assignment {
   id: string;
   assignee_id: string;
@@ -29,7 +33,6 @@ interface Assignment {
   role: string;
   created_at: string;
 }
-
 interface Response {
   id: string;
   assignment_id: string;
@@ -37,7 +40,6 @@ interface Response {
   status: string;
   created_at: string;
 }
-
 interface Evaluation {
   id: string;
   response_id: string;
@@ -45,7 +47,6 @@ interface Evaluation {
   note: string;
   status: string;
 }
-
 interface TimelineEvent {
   id: string;
   activity_id: string;
@@ -75,13 +76,18 @@ export default function ActivityDetail() {
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
 
-  // فرم‌ها
+  // فرم‌های واگذاری، پاسخ، ارزیابی
   const [assigneeId, setAssigneeId] = useState("");
   const [assignRole, setAssignRole] = useState("executor");
   const [responseBody, setResponseBody] = useState("");
   const [evalScore, setEvalScore] = useState("");
   const [evalNote, setEvalNote] = useState("");
   const [evalStatus, setEvalStatus] = useState("approved");
+
+  // حالت‌های جدید برای مدیریت معوقه
+  const [newDueDate, setNewDueDate] = useState("");
+  const [showExtend, setShowExtend] = useState(false);
+  const [archiveNote, setArchiveNote] = useState("");
 
   const [loading, setLoading] = useState(true);
 
@@ -90,7 +96,6 @@ export default function ActivityDetail() {
       const data = await api.get<Activity>(`/activities/${id}`);
       setActivity(data);
 
-      // دریافت واگذاری‌ها و پاسخ‌ها
       const [assigns, resps] = await Promise.all([
         api.get<Assignment[]>(`/assignments/?activity_id=${id}`).catch(() => []),
         api.get<Response[]>(`/responses/?activity_id=${id}`).catch(() => []),
@@ -100,7 +105,6 @@ export default function ActivityDetail() {
       setAssignments(assignmentList);
       setResponses(responseList);
 
-      // دریافت ارزیابی آخرین پاسخ (در صورت وجود)
       if (responseList.length > 0) {
         const lastResp = responseList[responseList.length - 1];
         try {
@@ -113,7 +117,6 @@ export default function ActivityDetail() {
         setEvaluation(null);
       }
 
-      // دریافت تایم‌لاین
       try {
         const events = await api.get<TimelineEvent[]>(`/timeline/?activity_id=${id}`);
         setTimeline(Array.isArray(events) ? events : []);
@@ -195,6 +198,37 @@ export default function ActivityDetail() {
     }
   };
 
+  // اقدامات معوقه
+  const handleExtendDeadline = async () => {
+    if (!newDueDate) return;
+    try {
+      await api.patch(`/activities/${id}`, { due_at: new Date(newDueDate).toISOString() });
+      setShowExtend(false);
+      setNewDueDate("");
+      fetchActivity();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleArchiveWithNote = async () => {
+    try {
+      // ابتدا فعالیت را بایگانی می‌کنیم
+      await api.patch(`/activities/${id}`, { status: "archived" });
+      // در صورت تمایل می‌توانید یک یادداشت از طریق endpoint خاص ثبت کنید (اینجا فقط status تغییر می‌کند)
+      fetchActivity();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const isOverdue = (): boolean => {
+    if (!activity || !activity.due_at) return false;
+    const due = new Date(activity.due_at);
+    const now = new Date();
+    return due < now && ["published", "in_progress", "submitted", "needs_revision"].includes(activity.status);
+  };
+
   if (loading) return <div className="p-8 text-center">در حال بارگیری...</div>;
   if (!activity) return <div className="p-8 text-center text-red-500">فعالیت یافت نشد.</div>;
 
@@ -202,6 +236,53 @@ export default function ActivityDetail() {
 
   return (
     <div className="space-y-6">
+      {/* هشدار معوقه */}
+      {isOverdue() && (
+        <Card className="border-2 border-rose-300 bg-rose-50">
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-center gap-2 text-rose-700 font-semibold">
+              <AlertTriangle size={20} />
+              <span>این فعالیت از موعد مقرر گذشته است. اقدامی انتخاب کنید:</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowExtend(!showExtend)}
+              >
+                <Timer size={16} className="ml-1" /> تمدید مهلت
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/activities/${id}?tab=assign`)}
+              >
+                <ArrowRightLeft size={16} className="ml-1" /> واگذاری دوباره
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleArchiveWithNote}
+              >
+                <Archive size={16} className="ml-1" /> بایگانی (لغو)
+              </Button>
+            </div>
+            {showExtend && (
+              <div className="flex items-center gap-2">
+                <Input
+                  type="datetime-local"
+                  value={newDueDate}
+                  onChange={(e) => setNewDueDate(e.target.value)}
+                  className="w-auto"
+                />
+                <Button size="sm" onClick={handleExtendDeadline}>ثبت تاریخ جدید</Button>
+                <Button size="sm" variant="ghost" onClick={() => setShowExtend(false)}>انصراف</Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* اطلاعات اصلی */}
       <Card className="glass-card">
         <CardContent className="p-4 space-y-3">
@@ -224,7 +305,6 @@ export default function ActivityDetail() {
               </div>
             )}
           </div>
-          {/* دکمه‌های تغییر وضعیت */}
           <div className="flex flex-wrap gap-2 pt-2">
             {activity.status === "draft" && (
               <Button size="sm" onClick={() => handleStatusChange("published")}>انتشار</Button>
