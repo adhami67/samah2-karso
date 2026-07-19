@@ -1,4 +1,4 @@
-const API_BASE = "http://192.168.4.15:8000/api";
+const API_BASE = "http://127.0.0.1:8000/api";
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const token = localStorage.getItem("access_token");

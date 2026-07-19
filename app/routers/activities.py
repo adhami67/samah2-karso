@@ -1,5 +1,6 @@
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
+from sqlalchemy import func
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.db.deps import get_db
@@ -117,3 +118,39 @@ def assign_activity(
         role=payload.role or "executor",
     )
     return assignment
+
+@router.get("/my/today", response_model=list[ActivityRead])
+def my_today_activities(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    today = datetime.now(timezone.utc).date()
+    return (
+        db.query(Activity)
+        .join(Activity.assignments)
+        .filter(
+            Assignment.assignee_id == current_user.id,
+            func.date(Activity.due_at) == today,
+            Activity.status.in_(["published", "in_progress", "submitted", "needs_revision"]),
+        )
+        .order_by(Activity.due_at)
+        .all()
+    )
+
+@router.get("/my/overdue", response_model=list[ActivityRead])
+def my_overdue_activities(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    now = datetime.now(timezone.utc)
+    return (
+        db.query(Activity)
+        .join(Activity.assignments)
+        .filter(
+            Assignment.assignee_id == current_user.id,
+            Activity.due_at < now,
+            Activity.status.in_(["published", "in_progress", "submitted", "needs_revision"]),
+        )
+        .order_by(Activity.due_at)
+        .all()
+    )

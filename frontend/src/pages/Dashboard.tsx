@@ -5,27 +5,29 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard,
   Clock,
-  Send,
   AlertTriangle,
   CheckCircle,
-  BarChart3,
-  Star,
-  LogOut,
-  User,
-  FileText,
-  Zap,
+  Calendar,
+  ArrowLeft,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
+interface Activity {
+  id: string;
+  title: string;
+  status: string;
+  due_at: string | null;
+  activity_type: string;
+}
+
 interface MySummary {
   total_activities: number;
-  completed: number;
   in_progress: number;
   submitted: number;
   needs_revision: number;
   approved: number;
+  completed: number;
   average_score: number | null;
 }
 
@@ -33,9 +35,7 @@ const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
+    transition: { staggerChildren: 0.1 },
   },
 };
 
@@ -46,81 +46,141 @@ const itemVariants = {
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
+  const [todayActivities, setTodayActivities] = useState<Activity[]>([]);
+  const [overdueActivities, setOverdueActivities] = useState<Activity[]>([]);
   const [summary, setSummary] = useState<MySummary | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    api.get<MySummary>("/reports/my-summary")
-      .then(setSummary)
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    const fetchData = async () => {
+      try {
+        const [today, overdue, sum] = await Promise.all([
+          api.get<Activity[]>("/activities/my/today").catch(() => []),
+          api.get<Activity[]>("/activities/my/overdue").catch(() => []),
+          api.get<MySummary>("/reports/my-summary").catch(() => null),
+        ]);
+        setTodayActivities(Array.isArray(today) ? today : []);
+        setOverdueActivities(Array.isArray(overdue) ? overdue : []);
+        setSummary(sum);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
-  if (loading) return <div className="p-8 text-center text-slate-500">در حال بارگیری داشبورد...</div>;
+  if (loading) return <div className="p-8 text-center">در حال بارگیری...</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
+    <div className="space-y-6">
+      {/* بخش بالایی: امروز من */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-700 mb-3">
+          <Calendar className="text-orange-500" size={22} />
+          امروز من
+        </h2>
+        {todayActivities.length === 0 ? (
+          <Card className="glass-card">
+            <CardContent className="p-4 text-center text-slate-400">
+              برای امروز مسئولیتی نداری — آفرین!
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-2">
+            {todayActivities.map((act) => (
+              <Card
+                key={act.id}
+                className="glass-card hover:shadow-md cursor-pointer"
+                onClick={() => navigate(`/activities/${act.id}`)}
+              >
+                <CardContent className="p-3 flex items-center justify-between">
+                  <span className="font-medium">{act.title}</span>
+                  <span className="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded-full">
+                    {act.status === "in_progress" ? "در حال انجام" : act.status}
+                  </span>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </motion.div>
 
-      {/* محتوای اصلی */}
-      <main className="p-6 max-w-4xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2 mb-6"
-        >
-          <Zap className="text-orange-500" size={24} />
-          <h2 className="text-xl font-semibold text-slate-700">گزارش عملکرد من</h2>
+      {/* بخش معوقه‌ها */}
+      {overdueActivities.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <h2 className="flex items-center gap-2 text-lg font-semibold text-rose-600 mb-3">
+            <AlertTriangle size={22} />
+            عقب‌افتاده
+          </h2>
+          <div className="space-y-2">
+            {overdueActivities.map((act) => (
+              <Card
+                key={act.id}
+                className="border-l-4 border-rose-500 glass-card hover:shadow-md cursor-pointer"
+                onClick={() => navigate(`/activities/${act.id}`)}
+              >
+                <CardContent className="p-3 flex items-center justify-between">
+                  <div>
+                    <span className="font-medium">{act.title}</span>
+                    {act.due_at && (
+                      <div className="text-xs text-slate-400 mt-1">
+                        مهلت: {new Date(act.due_at).toLocaleDateString("fa-IR")}
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-xs text-rose-600 bg-rose-50 px-2 py-1 rounded-full">
+                    عقب‌افتاده
+                  </span>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </motion.div>
+      )}
 
-        {/* کارت‌های آمار */}
+      {/* کارت‌های آماری (خلاصه) */}
+      {summary && (
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
+          className="grid grid-cols-2 md:grid-cols-4 gap-4"
         >
           <motion.div variants={itemVariants}>
-            <StatCard title="کل فعالیت‌ها" value={summary?.total_activities ?? 0} icon={<FileText />} bgColor="bg-blue-50" iconColor="text-blue-500" />
+            <StatCard title="در حال انجام" value={summary.in_progress} icon={<Clock />} color="bg-amber-100 text-amber-700" />
           </motion.div>
           <motion.div variants={itemVariants}>
-            <StatCard title="در حال انجام" value={summary?.in_progress ?? 0} icon={<Clock />} bgColor="bg-amber-50" iconColor="text-amber-500" />
+            <StatCard title="ارسال‌شده" value={summary.submitted} icon={<CheckCircle />} color="bg-indigo-100 text-indigo-700" />
           </motion.div>
           <motion.div variants={itemVariants}>
-            <StatCard title="ارسال‌شده" value={summary?.submitted ?? 0} icon={<Send />} bgColor="bg-indigo-50" iconColor="text-indigo-500" />
+            <StatCard title="نیاز به اصلاح" value={summary.needs_revision} icon={<AlertTriangle />} color="bg-rose-100 text-rose-700" />
           </motion.div>
           <motion.div variants={itemVariants}>
-            <StatCard title="نیاز به اصلاح" value={summary?.needs_revision ?? 0} icon={<AlertTriangle />} bgColor="bg-rose-50" iconColor="text-rose-500" />
-          </motion.div>
-          <motion.div variants={itemVariants}>
-            <StatCard title="تأییدشده" value={summary?.approved ?? 0} icon={<CheckCircle />} bgColor="bg-emerald-50" iconColor="text-emerald-500" />
-          </motion.div>
-          <motion.div variants={itemVariants}>
-            <StatCard title="تکمیل‌شده" value={summary?.completed ?? 0} icon={<BarChart3 />} bgColor="bg-green-50" iconColor="text-green-500" />
-          </motion.div>
-          <motion.div variants={itemVariants}>
-            <StatCard title="میانگین امتیاز" value={summary?.average_score ? `${summary.average_score}%` : "—"} icon={<Star />} bgColor="bg-purple-50" iconColor="text-purple-500" />
+            <StatCard title="تکمیل‌شده" value={summary.completed} icon={<CheckCircle />} color="bg-green-100 text-green-700" />
           </motion.div>
         </motion.div>
+      )}
 
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="flex justify-center">
-          <Button onClick={() => navigate("/activities")} className="px-6 py-2 text-base">
-            مشاهدهٔ فعالیت‌ها
-          </Button>
-        </motion.div>
-      </main>
+      <div className="flex justify-center">
+        <Button onClick={() => navigate("/activities")} className="px-6">
+          همهٔ فعالیت‌ها
+        </Button>
+      </div>
     </div>
   );
 }
 
-function StatCard({ title, value, icon, bgColor, iconColor }: { title: string; value: string | number; icon: React.ReactNode; bgColor: string; iconColor: string }) {
+function StatCard({ title, value, icon, color }: { title: string; value: number; icon: React.ReactNode; color: string }) {
   return (
-    <Card className={`${bgColor} border-none shadow-sm hover:shadow-md transition-shadow hover:scale-105 duration-200`}>
-      <CardContent className="p-4 flex items-center gap-4">
-        <div className={`p-3 rounded-full bg-white ${iconColor}`}>{icon}</div>
+    <Card className="glass-card">
+      <CardContent className="p-4 flex items-center gap-3">
+        <div className={`p-2 rounded-full ${color}`}>{icon}</div>
         <div>
-          <p className="text-sm font-medium text-slate-500">{title}</p>
-          <p className="text-2xl font-bold text-slate-800">{value}</p>
+          <p className="text-sm text-slate-500">{title}</p>
+          <p className="text-xl font-bold">{value}</p>
         </div>
       </CardContent>
     </Card>
