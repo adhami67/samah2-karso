@@ -1,15 +1,20 @@
-from app.schemas.base import ORMModel
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
 
-class AssignmentCreate(ORMModel):
-    activity_id: str
+
+class AssignmentCreate(BaseModel):
     assignee_id: str
-    assignee_type: str = "user"
-    role: str = "executor"
+    role: Optional[str] = "executor"
 
-class AssignmentRead(ORMModel):
+
+class AssignmentRead(BaseModel):
     id: str
     activity_id: str
     assignee_id: str
     assignee_type: str
     role: str
-    status: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

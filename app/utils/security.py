@@ -1,22 +1,43 @@
 from datetime import datetime, timedelta, timezone
-import jwt
-from passlib.context import CryptContext
+from typing import Optional
+
+import bcrypt
+from jose import JWTError, jwt
+
 from app.core.config import settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-ALGORITHM = "HS256"
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    """هش کردن رمز عبور با bcrypt"""
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
+    return hashed.decode("utf-8")
 
-def verify_password(plain_password: str, password_hash: str) -> bool:
-    return pwd_context.verify(plain_password, password_hash)
 
-def create_access_token(subject: str, minutes: int | None = None) -> str:
-    expire_minutes = minutes or settings.access_token_expire_minutes
-    expire = datetime.now(timezone.utc) + timedelta(minutes=expire_minutes)
-    payload = {"sub": subject, "exp": expire}
-    return jwt.encode(payload, settings.secret_key, algorithm=ALGORITHM)
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """تأیید رمز عبور با bcrypt"""
+    return bcrypt.checkpw(
+        plain_password.encode("utf-8"),
+        hashed_password.encode("utf-8")
+    )
+
+
+def create_access_token(subject: str, expires_delta: Optional[timedelta] = None) -> str:
+    """ساخت JWT توکن با دریافت subject"""
+    to_encode = {"sub": subject}
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(minutes=settings.access_token_expire_minutes)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm="HS256")
+    return encoded_jwt
+
 
 def decode_token(token: str) -> dict:
-    return jwt.decode(token, settings.secret_key, algorithms=[ALGORITHM])
+    """رمزگشایی JWT و برگرداندن payload"""
+    try:
+        payload = jwt.decode(token, settings.secret_key, algorithms=["HS256"])
+        return payload
+    except JWTError:
+        raise ValueError("Invalid token")
