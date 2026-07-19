@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
+import Activities from "@/pages/Activities";
+import NewActivity from "@/pages/NewActivity";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { token } = useAuth();
@@ -25,6 +27,22 @@ function App() {
           />
           {/* مسیر پیش‌فرض -> داشبورد */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route
+            path="/activities"
+            element={
+              <ProtectedRoute>
+                <Activities />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/activities/new"
+            element={
+              <ProtectedRoute>
+                <NewActivity />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
