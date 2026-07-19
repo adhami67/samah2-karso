@@ -61,29 +61,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
-      {/* هدر */}
-      <motion.header
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white/80 backdrop-blur shadow-sm border-b border-orange-100 py-4 px-6 flex justify-between items-center"
-      >
-        <div className="flex items-center gap-2">
-          <div className="bg-orange-500 p-2 rounded-lg">
-            <LayoutDashboard className="text-white" size={28} />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-800">کارسو</h1>
-          <span className="text-sm text-slate-400 hidden sm:inline">| داشبورد</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-slate-600 text-sm bg-slate-50 py-1 px-3 rounded-full">
-            <User size={18} className="text-orange-500" />
-            <span>{user?.full_name}</span>
-          </div>
-          <Button variant="outline" size="sm" onClick={logout} className="flex items-center gap-1">
-            <LogOut size={16} /> خروج
-          </Button>
-        </div>
-      </motion.header>
 
       {/* محتوای اصلی */}
       <main className="p-6 max-w-4xl mx-auto">

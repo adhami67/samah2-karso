@@ -1,11 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import MainLayout from "@/components/MainLayout";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Activities from "@/pages/Activities";
 import NewActivity from "@/pages/NewActivity";
 import ActivityDetail from "@/pages/ActivityDetail";
-
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { token } = useAuth();
@@ -20,39 +20,18 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route
-            path="/dashboard"
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <MainLayout />
               </ProtectedRoute>
             }
-          />
-          {/* مسیر پیش‌فرض -> داشبورد */}
+          >
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/activities" element={<Activities />} />
+            <Route path="/activities/new" element={<NewActivity />} />
+            <Route path="/activities/:id" element={<ActivityDetail />} />
+          </Route>
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          <Route
-            path="/activities"
-            element={
-              <ProtectedRoute>
-                <Activities />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/activities/new"
-            element={
-              <ProtectedRoute>
-                <NewActivity />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/activities/:id"
-            element={
-              <ProtectedRoute>
-                <ActivityDetail />
-              </ProtectedRoute>
-            }
-          />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

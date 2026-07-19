@@ -69,19 +69,6 @@ export default function Activities() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
-      <header className="bg-white/80 backdrop-blur shadow-sm border-b border-orange-100 py-4 px-6 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <div className="bg-orange-500 p-2 rounded-lg">
-            <FileText className="text-white" size={28} />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-800">کارسو</h1>
-          <span className="text-sm text-slate-400 hidden sm:inline">| فعالیت‌ها</span>
-        </div>
-        <Button variant="outline" onClick={() => navigate("/dashboard")}>
-          بازگشت به داشبورد
-        </Button>
-      </header>
-
       <main className="p-6 max-w-4xl mx-auto">
         {/* نوار جستجو و فیلتر */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">

@@ -38,12 +38,7 @@ export default function NewActivity() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
-      <header className="bg-white/80 backdrop-blur shadow-sm border-b border-orange-100 py-4 px-6 flex items-center gap-4">
-        <Button variant="ghost" onClick={() => navigate("/activities")}>
-          <ArrowLeft size={20} />
-        </Button>
-        <h1 className="text-xl font-bold text-slate-800">ایجاد فعالیت جدید</h1>
-      </header>
+
 
       <main className="p-6 max-w-2xl mx-auto">
         <Card>

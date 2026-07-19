@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from app.core.config import settings
 from app.db.session import Base, engine
 from app import models  # noqa: F401
-from app.routers import health, auth, bootstrap, security, workspaces, groups, activities, assignments, responses, evaluations, reports
+from app.routers import health, auth, bootstrap, security, workspaces, groups, activities, assignments, responses, evaluations, reports, timeline
 from fastapi.middleware.cors import CORSMiddleware
 
 Base.metadata.create_all(bind=engine)
@@ -20,6 +20,7 @@ app.include_router(assignments.router, prefix="/api/assignments", tags=["assignm
 app.include_router(responses.router, prefix="/api/responses", tags=["responses"])
 app.include_router(evaluations.router, prefix="/api/evaluations", tags=["evaluations"])
 app.include_router(reports.router, prefix="/api/reports", tags=["Reports"])
+app.include_router(timeline.router, prefix="/api/timeline", tags=["Timeline"])
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
