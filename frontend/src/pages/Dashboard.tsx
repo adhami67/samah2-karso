@@ -1,18 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Clock,
   AlertTriangle,
   CheckCircle,
   Calendar,
-  ArrowLeft,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
+// اینترفیس‌ها بدون تغییر
 interface Activity {
   id: string;
   title: string;
@@ -20,7 +20,6 @@ interface Activity {
   due_at: string | null;
   activity_type: string;
 }
-
 interface MySummary {
   total_activities: number;
   in_progress: number;
@@ -38,7 +37,6 @@ const containerVariants = {
     transition: { staggerChildren: 0.1 },
   },
 };
-
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 },
@@ -51,32 +49,37 @@ export default function Dashboard() {
   const [summary, setSummary] = useState<MySummary | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [today, overdue, sum] = await Promise.all([
-          api.get<Activity[]>("/activities/my/today").catch(() => []),
-          api.get<Activity[]>("/activities/my/overdue").catch(() => []),
-          api.get<MySummary>("/reports/my-summary").catch(() => null),
-        ]);
-        setTodayActivities(Array.isArray(today) ? today : []);
-        setOverdueActivities(Array.isArray(overdue) ? overdue : []);
-        setSummary(sum);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    const cacheBuster = `?_ts=${Date.now()}`;
+    try {
+      const [today, overdue, sum] = await Promise.all([
+        api.get<Activity[]>(`/activities/my/today${cacheBuster}`).catch(() => []),
+        api.get<Activity[]>(`/activities/my/overdue${cacheBuster}`).catch(() => []),
+        api.get<MySummary>(`/reports/my-summary${cacheBuster}`).catch(() => null),
+      ]);
+      setTodayActivities(Array.isArray(today) ? today : []);
+      setOverdueActivities(Array.isArray(overdue) ? overdue : []);
+      setSummary(sum);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  // راز اصلی: رفرش خودکار هنگام بازگشت به صفحه
+  useEffect(() => {
+    fetchData();
+  }, [fetchData, location.key]);
 
   if (loading) return <div className="p-8 text-center">در حال بارگیری...</div>;
 
   return (
     <div className="space-y-6">
-      {/* بخش بالایی: امروز من */}
+      {/* امروز من */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-700 mb-3">
           <Calendar className="text-orange-500" size={22} />
@@ -108,7 +111,7 @@ export default function Dashboard() {
         )}
       </motion.div>
 
-      {/* بخش معوقه‌ها */}
+      {/* معوقه‌ها */}
       {overdueActivities.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h2 className="flex items-center gap-2 text-lg font-semibold text-rose-600 mb-3">
@@ -141,7 +144,7 @@ export default function Dashboard() {
         </motion.div>
       )}
 
-      {/* کارت‌های آماری (خلاصه) */}
+      {/* کارت‌های آماری */}
       {summary && (
         <motion.div
           variants={containerVariants}
@@ -166,7 +169,7 @@ export default function Dashboard() {
 
       <div className="flex justify-center">
         <Button onClick={() => navigate("/activities")} className="px-6">
-          همهٔ فعالیت‌ها
+          همهٔ مسئولیت‌ها
         </Button>
       </div>
     </div>
