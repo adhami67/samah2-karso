@@ -4,8 +4,8 @@ from app.db.deps import get_db
 from app.models.security import Permission, Role, User
 from app.schemas.security import (
     PermissionCreate, PermissionRead,
-    RoleCreate, RoleRead,
-    UserCreate, UserRead
+    RoleCreate, RoleRead, RoleUpdate,
+    UserCreate, UserRead, UserUpdate
 )
 from app.utils.security import hash_password
 from app.utils.deps import get_current_user, require_role
@@ -57,6 +57,46 @@ def list_roles(
 ):
     return db.query(Role).order_by(Role.created_at.desc()).all()
 
+@router.patch("/roles/{role_id}", response_model=RoleRead)
+def update_role(
+    role_id: str,
+    payload: RoleUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("system_admin"))
+):
+    role = db.get(Role, role_id)
+    if not role:
+        raise HTTPException(status_code=404, detail="نقش یافت نشد")
+
+    if payload.name is not None:
+        role.name = payload.name
+
+    if payload.permission_ids is not None:
+        perms = db.query(Permission).filter(Permission.id.in_(payload.permission_ids)).all()
+        role.permissions = perms
+
+    db.commit()
+    db.refresh(role)
+    return role
+
+@router.delete("/roles/{role_id}", status_code=204)
+def delete_role(
+    role_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("system_admin"))
+):
+    role = db.get(Role, role_id)
+    if not role:
+        raise HTTPException(status_code=404, detail="نقش یافت نشد")
+
+    # جلوگیری از حذف نقش‌های سیستمی
+    if role.code in ["system_admin", "school_admin", "teacher", "student", "parent"]:
+        raise HTTPException(status_code=400, detail="نقش‌های سیستمی قابل حذف نیستند")
+
+    db.delete(role)
+    db.commit()
+    # در صورت نیاز به return، می‌توانید Response(None, status_code=204) برگردانید
+
 # ---------- کاربران ----------
 @router.post("/users", response_model=UserRead, status_code=201)
 def create_user(
@@ -101,6 +141,47 @@ def list_users(
     current_user: User = Depends(require_role("system_admin"))
 ):
     return db.query(User).order_by(User.created_at.desc()).all()
+
+@router.patch("/users/{user_id}", response_model=UserRead)
+def update_user(
+    user_id: str,
+    payload: UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("system_admin"))
+):
+    user = db.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="کاربر یافت نشد")
+    
+    for field in ["full_name", "username", "is_active", "grade", "class_name",
+                  "father_name", "mother_name", "parent_phone", "phone",
+                  "address", "birth_date", "gender"]:
+        value = getattr(payload, field, None)
+        if value is not None:
+            setattr(user, field, value)
+    
+    if payload.password:
+        user.password_hash = hash_password(payload.password)
+    
+    if payload.role_ids is not None:
+        roles = db.query(Role).filter(Role.id.in_(payload.role_ids)).all()
+        user.roles = roles
+    
+    db.commit()
+    db.refresh(user)
+    return user
+
+@router.delete("/users/{user_id}", status_code=204)
+def delete_user(
+    user_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("system_admin"))
+):
+    user = db.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="کاربر یافت نشد")
+    user.is_active = False
+    db.commit()
 
 @router.get("/me")
 def me(current_user: User = Depends(get_current_user)):
