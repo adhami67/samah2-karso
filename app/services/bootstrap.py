@@ -93,6 +93,7 @@ def bootstrap_system(db: Session) -> dict:
         admin = User(
             national_id=settings.bootstrap_admin_national_id,
             full_name=settings.bootstrap_admin_full_name,
+            username=settings.bootstrap_admin_username,
             password_hash=hash_password(settings.bootstrap_admin_password),
             roles=[role_map[ROLE_SYSTEM_ADMIN]],
         )

@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import ForeignKey, Boolean, String
+from sqlalchemy import ForeignKey, Boolean, String, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import TimestampedUUIDModel
 

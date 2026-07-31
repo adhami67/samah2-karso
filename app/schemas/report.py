@@ -1,22 +1,27 @@
+from typing import Optional, Dict
 from pydantic import BaseModel
-from typing import Optional
+from datetime import datetime
 
 
-class UserSummary(BaseModel):
-    total_activities: int
+class UserStatsResponse(BaseModel):
+    """آمار کاربر"""
+    total_assigned: int
     completed: int
     in_progress: int
-    submitted: int
-    needs_revision: int
-    approved: int
-    average_score: Optional[float] = None
+    done: int
+    average_completion_time: Optional[str]
 
 
-class WorkspaceSummary(BaseModel):
-    workspace_name: str
-    total_activities: int
+class SystemStatsResponse(BaseModel):
+    """آمار سیستم"""
+    total_works: int
+    total_receivers: int
+    status_distribution: Dict[str, int]
+
+
+class PerformanceReportResponse(BaseModel):
+    """گزارش عملکرد"""
+    total_works: int
     completed: int
-    in_progress: int
-    submitted: int
-    needs_revision: int
-    approved: int
+    completion_rate: float
+    average_completion_time: Optional[str]

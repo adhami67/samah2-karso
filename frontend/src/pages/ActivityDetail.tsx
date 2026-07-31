@@ -19,12 +19,12 @@ import {
 // اینترفیس‌ها (بدون تغییر)
 interface Activity {
   id: string;
-  title: string;
+  subject: string;
   description: string;
   status: string;
   activity_type: string;
   due_at: string | null;
-  workspace_id: string;
+  work_group_id: string;
 }
 interface Assignment {
   id: string;
@@ -138,8 +138,8 @@ export default function ActivityDetail() {
     e.preventDefault();
     try {
       await api.post(`/activities/${id}/assign`, {
-        assignee_id: assigneeId,
-        role: assignRole,
+        receiver_user_id: assigneeId,
+        private_note: assignRole,
       });
       setAssigneeId("");
       fetchActivity();
@@ -287,7 +287,7 @@ export default function ActivityDetail() {
       <Card className="glass-card">
         <CardContent className="p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-800">{activity.title}</h2>
+            <h2 className="text-lg font-bold text-slate-800">{activity.subject}</h2>
             <span className={`px-3 py-1 rounded-full text-xs font-medium ${st.color}`}>{st.label}</span>
           </div>
           {activity.description && (
@@ -338,7 +338,7 @@ export default function ActivityDetail() {
             <CardContent>
               <form onSubmit={handleAssign} className="space-y-3">
                 <Input
-                  placeholder="شناسه کاربر (مثلاً 93002685...)"
+                  placeholder="شناسه کاربر (کد ملی یا UUID)"
                   value={assigneeId}
                   onChange={(e) => setAssigneeId(e.target.value)}
                   required

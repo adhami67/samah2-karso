@@ -1,12 +1,24 @@
+# app/services/workflow.py
+from app.core.constants import (
+    WORK_STATUS_DRAFT,
+    WORK_STATUS_PUBLISHED,
+    WORK_STATUS_IN_PROGRESS,
+    WORK_STATUS_SUBMITTED,
+    WORK_STATUS_NEEDS_REVISION,
+    WORK_STATUS_APPROVED,
+    WORK_STATUS_COMPLETED,
+    WORK_STATUS_ARCHIVED,
+)
+
 ALLOWED_ACTIVITY_TRANSITIONS = {
-    "draft": {"published", "archived"},
-    "published": {"in_progress", "archived"},
-    "in_progress": {"submitted", "needs_revision", "archived"},
-    "submitted": {"needs_revision", "approved", "completed", "archived"},
-    "needs_revision": {"in_progress", "archived"},
-    "approved": {"completed", "archived"},
-    "completed": {"archived"},
-    "archived": set(),
+    WORK_STATUS_DRAFT: {WORK_STATUS_PUBLISHED, WORK_STATUS_ARCHIVED},
+    WORK_STATUS_PUBLISHED: {WORK_STATUS_IN_PROGRESS, WORK_STATUS_ARCHIVED},
+    WORK_STATUS_IN_PROGRESS: {WORK_STATUS_SUBMITTED, WORK_STATUS_NEEDS_REVISION, WORK_STATUS_ARCHIVED},
+    WORK_STATUS_SUBMITTED: {WORK_STATUS_NEEDS_REVISION, WORK_STATUS_APPROVED, WORK_STATUS_COMPLETED, WORK_STATUS_ARCHIVED},
+    WORK_STATUS_NEEDS_REVISION: {WORK_STATUS_IN_PROGRESS, WORK_STATUS_ARCHIVED},
+    WORK_STATUS_APPROVED: {WORK_STATUS_COMPLETED, WORK_STATUS_ARCHIVED},
+    WORK_STATUS_COMPLETED: {WORK_STATUS_ARCHIVED},
+    WORK_STATUS_ARCHIVED: set(),
 }
 
 def can_transition_activity(current_status: str, target_status: str) -> bool:

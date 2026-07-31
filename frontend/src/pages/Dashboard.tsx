@@ -15,7 +15,7 @@ import { motion } from "framer-motion";
 // اینترفیس‌ها بدون تغییر
 interface Activity {
   id: string;
-  title: string;
+  subject: string;
   status: string;
   due_at: string | null;
   activity_type: string;
@@ -51,18 +51,26 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
 
+// بخش fetchData را به این شکل تغییر دهید
   const fetchData = useCallback(async () => {
     setLoading(true);
-    const cacheBuster = `?_ts=${Date.now()}`;
     try {
       const [today, overdue, sum] = await Promise.all([
-        api.get<Activity[]>(`/activities/my/today${cacheBuster}`).catch(() => []),
-        api.get<Activity[]>(`/activities/my/overdue${cacheBuster}`).catch(() => []),
-        api.get<MySummary>(`/reports/my-summary${cacheBuster}`).catch(() => null),
+        api.get<Activity[]>("/activities/my/today").catch(() => []),
+        api.get<Activity[]>("/activities/my/overdue").catch(() => []),
+        api.get<MySummary>("/reports/my-summary").catch(() => ({
+          total_activities: 0,
+          in_progress: 0,
+          submitted: 0,
+          needs_revision: 0,
+          approved: 0,
+          completed: 0,
+          average_score: null,
+        })),
       ]);
       setTodayActivities(Array.isArray(today) ? today : []);
       setOverdueActivities(Array.isArray(overdue) ? overdue : []);
-      setSummary(sum);
+      setSummary(sum as MySummary);
     } catch (err) {
       console.error(err);
     } finally {
@@ -100,7 +108,7 @@ export default function Dashboard() {
                 onClick={() => navigate(`/activities/${act.id}`)}
               >
                 <CardContent className="p-3 flex items-center justify-between">
-                  <span className="font-medium">{act.title}</span>
+                  <span className="font-medium">{act.subject}</span>
                   <span className="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded-full">
                     {act.status === "in_progress" ? "در حال انجام" : act.status}
                   </span>
@@ -127,7 +135,7 @@ export default function Dashboard() {
               >
                 <CardContent className="p-3 flex items-center justify-between">
                   <div>
-                    <span className="font-medium">{act.title}</span>
+                    <span className="font-medium">{act.subject}</span>
                     {act.due_at && (
                       <div className="text-xs text-slate-400 mt-1">
                         مهلت: {new Date(act.due_at).toLocaleDateString("fa-IR")}

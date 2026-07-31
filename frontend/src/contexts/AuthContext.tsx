@@ -1,3 +1,4 @@
+// frontend/src/contexts/AuthContext.tsx
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { api } from "@/lib/api";
 
@@ -5,7 +6,8 @@ interface User {
   id: string;
   national_id: string;
   full_name: string;
-  email?: string;
+  username?: string;
+  roles: string[]; // ✅ نقش‌های کاربر
 }
 
 interface AuthContextType {
@@ -14,6 +16,8 @@ interface AuthContextType {
   login: (national_id: string, password: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
+  hasRole: (role: string) => boolean;
+  hasAnyRole: (roles: string[]) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,11 +29,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (token) {
-      // دریافت اطلاعات کاربر با توکن موجود
-      api.get<{ id: string; national_id: string; full_name: string; email?: string }>("/auth/me")
-        .then((userData) => setUser(userData))
+      api
+        .get<{
+          id: string;
+          national_id: string;
+          full_name: string;
+          username?: string;
+          roles?: string[];
+        }>("/auth/me")
+        .then((data) => {
+          setUser({
+            id: data.id,
+            national_id: data.national_id,
+            full_name: data.full_name,
+            username: data.username,
+            roles: data.roles || [],
+          });
+        })
         .catch(() => {
-          // توکن نامعتبر
           localStorage.removeItem("access_token");
           setToken(null);
         });
@@ -45,7 +62,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       localStorage.setItem("access_token", data.access_token);
       setToken(data.access_token);
-      // بعد از تنظیم توکن، useEffect اطلاعات کاربر را می‌گیرد
     } finally {
       setIsLoading(false);
     }
@@ -57,8 +73,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  const hasRole = (role: string): boolean => {
+    return user?.roles?.includes(role) ?? false;
+  };
+
+  const hasAnyRole = (roles: string[]): boolean => {
+    return roles.some((role) => user?.roles?.includes(role));
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isLoading }}>
+    <AuthContext.Provider
+      value={{ user, token, login, logout, isLoading, hasRole, hasAnyRole }}
+    >
       {children}
     </AuthContext.Provider>
   );

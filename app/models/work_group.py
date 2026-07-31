@@ -1,4 +1,5 @@
-from sqlalchemy import String, Text, Boolean
+from datetime import datetime
+from sqlalchemy import String, Text, Boolean, ForeignKey, DateTime  # ForeignKey را اضافه کنید
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import TimestampedUUIDModel
 from app.core.constants import WORKGROUP_STATUS_ACTIVE

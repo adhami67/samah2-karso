@@ -1,37 +1,60 @@
+# app/schemas/activity.py
 from datetime import datetime
+from typing import Optional, List
 from pydantic import Field
 from app.schemas.base import ORMModel
 
 class ActivityCreate(ORMModel):
-    workspace_id: str
-
-    title: str = Field(min_length=1, max_length=250)
-
-    description: str | None = None
-
-    activity_type: str = "general"
-
-    due_at: datetime | None = None
-
-    assignee_id: str | None = None
-
-    assignee_type: str = "user"   # user | group
-
-    role: str = "executor"
+    work_group_id: str = Field(..., description="شناسه حوزه")  # تغییر نام
+    work_type_id: str = Field(..., description="شناسه نوع کار")
+    work_priority_id: str = Field(..., description="شناسه اولویت")
+    parent_work_id: Optional[str] = Field(None, description="شناسه کار والد")
+    
+    subject: str = Field(min_length=1, max_length=255, description="عنوان کار")
+    description: Optional[str] = Field(None, description="توضیحات")
+    due_at: Optional[datetime] = Field(None, description="مهلت انجام")
+    
+    receiver_user_ids: List[str] = Field(..., description="لیست شناسه‌های مجریان")
 
 class ActivityUpdate(ORMModel):
-    title: str | None = Field(default=None, min_length=1, max_length=250)
-    description: str | None = None
-    activity_type: str | None = None
-    status: str | None = None
-    due_at: datetime | None = None
+    subject: Optional[str] = Field(None, min_length=1, max_length=255)
+    description: Optional[str] = None
+    status: Optional[str] = None
+    due_at: Optional[datetime] = None
 
 class ActivityRead(ORMModel):
     id: str
-    workspace_id: str
-    created_by_user_id: str | None
-    title: str
-    description: str | None
-    activity_type: str
+    work_group_id: str
+    work_type_id: str
+    work_priority_id: str
+    parent_work_id: Optional[str]
+    subject: str
+    description: Optional[str]
     status: str
-    due_at: datetime | None
+    sender_user_id: str
+    created_by_user_id: Optional[str]
+    sent_at: Optional[datetime]
+    due_at: Optional[datetime]
+    created_at: datetime
+    updated_at: datetime
+    
+    # فیلدهای اضافی برای نمایش (اختیاری)
+    work_group_name: Optional[str] = None
+    work_type_name: Optional[str] = None
+    work_priority_name: Optional[str] = None
+    sender_username: Optional[str] = None
+    receivers: Optional[List["ActivityReceiverRead"]] = None
+
+class ActivityReceiverRead(ORMModel):
+    id: str
+    receiver_user_id: str
+    status: str
+    seen_time: Optional[datetime]
+    reply_time: Optional[datetime]
+    reply_deadline_time: Optional[datetime]
+    in_progress_time: Optional[datetime]
+    done_time: Optional[datetime]
+    finished_time: Optional[datetime]
+    
+    receiver_username: Optional[str] = None
+    receiver_full_name: Optional[str] = None

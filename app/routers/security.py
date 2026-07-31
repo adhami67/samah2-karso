@@ -2,14 +2,23 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.deps import get_db
 from app.models.security import Permission, Role, User
-from app.schemas.security import PermissionCreate, PermissionRead, RoleCreate, RoleRead, UserCreate, UserRead
+from app.schemas.security import (
+    PermissionCreate, PermissionRead,
+    RoleCreate, RoleRead,
+    UserCreate, UserRead
+)
 from app.utils.security import hash_password
 from app.utils.deps import get_current_user, require_role
 
 router = APIRouter()
 
+# ---------- مجوزها ----------
 @router.post("/permissions", response_model=PermissionRead, status_code=201)
-def create_permission(payload: PermissionCreate, db: Session = Depends(get_db), user: User = Depends(require_role("system_admin"))):
+def create_permission(
+    payload: PermissionCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("system_admin"))
+):
     item = Permission(code=payload.code, name=payload.name)
     db.add(item)
     db.commit()
@@ -17,12 +26,24 @@ def create_permission(payload: PermissionCreate, db: Session = Depends(get_db), 
     return item
 
 @router.get("/permissions", response_model=list[PermissionRead])
-def list_permissions(db: Session = Depends(get_db), user: User = Depends(require_role("system_admin"))):
+def list_permissions(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("system_admin"))
+):
     return db.query(Permission).order_by(Permission.created_at.desc()).all()
 
+# ---------- نقش‌ها ----------
 @router.post("/roles", response_model=RoleRead, status_code=201)
-def create_role(payload: RoleCreate, db: Session = Depends(get_db), user: User = Depends(require_role("system_admin"))):
-    permissions = db.query(Permission).filter(Permission.id.in_(payload.permission_ids)).all() if payload.permission_ids else []
+def create_role(
+    payload: RoleCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("system_admin"))
+):
+    permissions = (
+        db.query(Permission)
+        .filter(Permission.id.in_(payload.permission_ids))
+        .all()
+    ) if payload.permission_ids else []
     item = Role(code=payload.code, name=payload.name, permissions=permissions)
     db.add(item)
     db.commit()
@@ -30,28 +51,55 @@ def create_role(payload: RoleCreate, db: Session = Depends(get_db), user: User =
     return item
 
 @router.get("/roles", response_model=list[RoleRead])
-def list_roles(db: Session = Depends(get_db), user: User = Depends(require_role("system_admin"))):
+def list_roles(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("system_admin"))
+):
     return db.query(Role).order_by(Role.created_at.desc()).all()
 
+# ---------- کاربران ----------
 @router.post("/users", response_model=UserRead, status_code=201)
-def create_user(payload: UserCreate, db: Session = Depends(get_db), user: User = Depends(require_role("system_admin"))):
+def create_user(
+    payload: UserCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("system_admin"))
+):
     existing = db.query(User).filter(User.national_id == payload.national_id).first()
     if existing:
         raise HTTPException(status_code=400, detail="National ID already exists")
-    roles = db.query(Role).filter(Role.id.in_(payload.role_ids)).all() if payload.role_ids else []
-    item = User(
+
+    username = payload.username or payload.national_id
+    roles = (
+        db.query(Role).filter(Role.id.in_(payload.role_ids)).all()
+    ) if payload.role_ids else []
+
+    user = User(
+        username=username,
         national_id=payload.national_id,
         full_name=payload.full_name,
         password_hash=hash_password(payload.password),
+        is_active=True,
+        grade=payload.grade,
+        class_name=payload.class_name,
+        father_name=payload.father_name,
+        mother_name=payload.mother_name,
+        parent_phone=payload.parent_phone,
+        phone=payload.phone,
+        address=payload.address,
+        birth_date=payload.birth_date,
+        gender=payload.gender,
         roles=roles,
     )
-    db.add(item)
+    db.add(user)
     db.commit()
-    db.refresh(item)
-    return item
+    db.refresh(user)
+    return user
 
 @router.get("/users", response_model=list[UserRead])
-def list_users(db: Session = Depends(get_db), user: User = Depends(require_role("system_admin"))):
+def list_users(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("system_admin"))
+):
     return db.query(User).order_by(User.created_at.desc()).all()
 
 @router.get("/me")
