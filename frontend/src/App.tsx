@@ -10,6 +10,8 @@ import ActivityDetail from "@/pages/ActivityDetail";
 import Users from "@/pages/Users";  // اضافه کنید
 import Roles from "@/pages/Roles";
 import StudentsGrouped from "@/pages/StudentsGrouped";
+import { Toaster } from "sonner"; // اضافه کنید
+
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { token } = useAuth();
@@ -21,6 +23,7 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <Toaster position="top-center" richColors />   {/* ← این خط را اضافه کنید */}
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route

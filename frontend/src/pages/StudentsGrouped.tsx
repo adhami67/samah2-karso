@@ -57,7 +57,7 @@ export default function StudentsGrouped() {
 
   const fetchData = async () => {
     try {
-      const data = await api.get<Group[]>("/security/students/grouped");
+      const data = await api.get<Group[]>("/bulk/students/grouped");
       setGroups(data || []);
     } catch (err) {
       console.error(err);

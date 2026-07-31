@@ -44,7 +44,7 @@ app.include_router(work_attachment_router.router)
 app.include_router(report_router.router)
 app.include_router(notification_router.router)
 # اصلاح ۱: اضافه کردن پیشوند برای آپلود انبوه
-app.include_router(bulk_upload.router, prefix="/api/security", tags=["Bulk"])
+app.include_router(bulk_upload.router, prefix="/api/bulk", tags=["Bulk"])
 # اصلاح ۲: اضافه کردن پیشوند برای پاسخ‌ها (مطابق معماری اصلی)
 app.include_router(responses.router, prefix="/api/responses", tags=["Responses"])
 

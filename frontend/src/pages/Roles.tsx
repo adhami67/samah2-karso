@@ -1,28 +1,22 @@
-import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Pencil, Trash2 } from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import { api } from '@/lib/api';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Pencil, Trash2, Plus, Shield, Key, Users, LayoutDashboard, FileText, Settings, BarChart3 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 
 interface Permission {
   id: string;
   code: string;
   name: string;
+  group?: string;
 }
 
 interface Role {
@@ -32,81 +26,36 @@ interface Role {
   permissions: Permission[];
 }
 
+const permissionGroups = [
+  { id: 'dashboard', label: 'داشبورد', icon: LayoutDashboard },
+  { id: 'activities', label: 'فعالیت‌ها', icon: FileText },
+  { id: 'users', label: 'کاربران', icon: Users },
+  { id: 'system', label: 'سیستم', icon: Settings },
+  { id: 'reports', label: 'گزارش‌ها', icon: BarChart3 },
+];
+
 export default function Roles() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
-  const [newRole, setNewRole] = useState({
-    code: "",
-    name: "",
-    permission_ids: [] as string[],
-  });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // stateهای ویرایش
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [newRole, setNewRole] = useState({ code: '', name: '', permission_ids: [] as string[] });
   const [editingRole, setEditingRole] = useState<Role | null>(null);
-  const [editForm, setEditForm] = useState({
-    name: "",
-    permission_ids: [] as string[],
-  });
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const fetchData = async () => {
+    setLoading(true);
     try {
-      const [rolesData, permsData] = await Promise.all([
-        api.get<Role[]>("/security/roles"),
-        api.get<Permission[]>("/security/permissions"),
+      const [rolesRes, permsRes] = await Promise.all([
+        api.get<Role[]>('/security/roles'),
+        api.get<Permission[]>('/security/permissions'),
       ]);
-      setRoles(rolesData || []);
-      setPermissions(permsData || []);
-      setError(null);
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "خطا در دریافت داده‌ها");
+      setRoles(rolesRes);
+      setPermissions(permsRes);
+    } catch (error) {
+      toast.error('مشکل در دریافت اطلاعات');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleCreateRole = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await api.post("/security/roles", newRole);
-      setNewRole({ code: "", name: "", permission_ids: [] });
-      fetchData();
-    } catch (err: any) {
-      alert(err.message);
-    }
-  };
-
-  const openEditDialog = (role: Role) => {
-    setEditingRole(role);
-    setEditForm({
-      name: role.name,
-      permission_ids: role.permissions.map((p) => p.id),
-    });
-    setEditDialogOpen(true);
-  };
-
-  const handleEditRole = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingRole) return;
-    try {
-      await api.patch(`/security/roles/${editingRole.id}`, editForm);
-      setEditDialogOpen(false);
-      fetchData();
-    } catch (err: any) {
-      alert(err.message);
-    }
-  };
-
-  const handleDeleteRole = async (roleId: string) => {
-    if (!confirm("آیا از حذف این نقش اطمینان دارید؟")) return;
-    try {
-      await api.delete(`/security/roles/${roleId}`);
-      fetchData();
-    } catch (err: any) {
-      alert(err.message);
     }
   };
 
@@ -114,166 +63,369 @@ export default function Roles() {
     fetchData();
   }, []);
 
-  if (loading) return <div className="p-8 text-center">در حال بارگیری...</div>;
-  if (error)
-    return <div className="p-8 text-center text-red-500">خطا: {error}</div>;
+  const handleCreateRole = async () => {
+    try {
+      await api.post('/security/roles', newRole);
+      toast.success('نقش جدید ایجاد شد');
+      setIsCreateDialogOpen(false);
+      setNewRole({ code: '', name: '', permission_ids: [] });
+      fetchData();
+    } catch (error) {
+      toast.error('مشکل در ایجاد نقش');
+    }
+  };
+
+  const handleUpdateRole = async () => {
+    if (!editingRole) return;
+    try {
+      await api.patch(`/security/roles/${editingRole.id}`, {
+        name: editingRole.name,
+        permission_ids: editingRole.permissions.map(p => p.id),
+      });
+      toast.success('نقش ویرایش شد');
+      setIsEditDialogOpen(false);
+      setEditingRole(null);
+      fetchData();
+    } catch (error) {
+      toast.error('مشکل در ویرایش نقش');
+    }
+  };
+
+  const handleDeleteRole = async (roleId: string, roleCode: string) => {
+    if (['system_admin', 'school_admin', 'teacher', 'student', 'parent'].includes(roleCode)) {
+      toast.error('نقش‌های سیستمی قابل حذف نیستند');
+      return;
+    }
+    if (!confirm('آیا از حذف این نقش اطمینان دارید؟')) return;
+    try {
+      await api.delete(`/security/roles/${roleId}`);
+      toast.success('نقش حذف شد');
+      fetchData();
+    } catch (error) {
+      toast.error('مشکل در حذف نقش');
+    }
+  };
+
+  const openEditDialog = (role: Role) => {
+    setEditingRole(role);
+    setIsEditDialogOpen(true);
+  };
+
+  const togglePermission = (permId: string) => {
+    if (editingRole) {
+      const currentPerms = editingRole.permissions.map(p => p.id);
+      const newPerms = currentPerms.includes(permId)
+        ? currentPerms.filter(id => id !== permId)
+        : [...currentPerms, permId];
+      const updatedPerms = permissions.filter(p => newPerms.includes(p.id));
+      setEditingRole({ ...editingRole, permissions: updatedPerms });
+    } else {
+      setNewRole(prev => ({
+        ...prev,
+        permission_ids: prev.permission_ids.includes(permId)
+          ? prev.permission_ids.filter(id => id !== permId)
+          : [...prev.permission_ids, permId],
+      }));
+    }
+  };
+
+  const getPermissionsByGroup = (perms: Permission[]) => {
+    const groups = permissionGroups.map(group => ({
+      ...group,
+      permissions: perms.filter(p => p.group === group.id),
+    }));
+    return groups;
+  };
+
+  const allPermissions = getPermissionsByGroup(permissions);
+
+  if (loading) {
+    return <SkeletonLoader />;
+  }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">مدیریت نقش‌ها</h1>
-
-      {/* فرم ایجاد نقش جدید */}
-      <Card>
-        <CardHeader>
-          <CardTitle>ایجاد نقش جدید</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleCreateRole} className="space-y-4">
-            <Input
-              placeholder="کد نقش (مثلاً teacher)"
-              value={newRole.code}
-              onChange={(e) => setNewRole({ ...newRole, code: e.target.value })}
-              required
-            />
-            <Input
-              placeholder="نام نقش (مثلاً معلم)"
-              value={newRole.name}
-              onChange={(e) => setNewRole({ ...newRole, name: e.target.value })}
-              required
-            />
-            <div>
-              <label className="block text-sm font-medium mb-2">مجوزها</label>
-              <div className="flex flex-wrap gap-3">
-                {permissions.map((p) => (
-                  <label
-                    key={p.id}
-                    className="flex items-center gap-1 text-sm"
-                  >
-                    <input
-                      type="checkbox"
-                      value={p.id}
-                      checked={newRole.permission_ids.includes(p.id)}
-                      onChange={(e) => {
-                        const ids = e.target.checked
-                          ? [...newRole.permission_ids, p.id]
-                          : newRole.permission_ids.filter((id) => id !== p.id);
-                        setNewRole({ ...newRole, permission_ids: ids });
-                      }}
-                    />
-                    {p.name}
-                  </label>
-                ))}
+    <div className="space-y-8 p-6 max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">مدیریت نقش‌ها</h1>
+          <p className="text-sm text-muted-foreground">
+            نقش‌ها و سطح دسترسی کاربران را مدیریت کنید
+          </p>
+        </div>
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="gap-2">
+              <Plus className="h-4 w-4" />
+              نقش جدید
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>ایجاد نقش جدید</DialogTitle>
+              <DialogDescription>
+                اطلاعات نقش جدید را وارد کنید. مجوزهای مورد نیاز را انتخاب کنید.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="role-code">کد نقش</Label>
+                  <Input
+                    id="role-code"
+                    placeholder="مثلاً: teacher"
+                    value={newRole.code}
+                    onChange={(e) => setNewRole({ ...newRole, code: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="role-name">نام نقش</Label>
+                  <Input
+                    id="role-name"
+                    placeholder="مثلاً: معلم"
+                    value={newRole.name}
+                    onChange={(e) => setNewRole({ ...newRole, name: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="space-y-3">
+                <Label>مجوزها</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {allPermissions.map((group) => (
+                    <Card key={group.id} className="border border-border/50">
+                      <CardHeader className="py-2 px-3">
+                        <CardTitle className="text-sm flex items-center gap-2">
+                          <group.icon className="h-4 w-4 text-muted-foreground" />
+                          {group.label}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="py-2 px-3 grid grid-cols-1 gap-1">
+                        {group.permissions.length > 0 ? (
+                          group.permissions.map((perm) => (
+                            <div key={perm.id} className="flex items-center space-x-2 rtl:space-x-reverse">
+                              <Checkbox
+                                id={`new-${perm.id}`}
+                                checked={newRole.permission_ids.includes(perm.id)}
+                                onCheckedChange={() => togglePermission(perm.id)}
+                              />
+                              <Label htmlFor={`new-${perm.id}`} className="text-sm cursor-pointer">
+                                {perm.name}
+                              </Label>
+                            </div>
+                          ))
+                        ) : (
+                          <span className="text-xs text-muted-foreground">بدون مجوز</span>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
             </div>
-            <Button type="submit">ایجاد نقش</Button>
-          </form>
-        </CardContent>
-      </Card>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>انصراف</Button>
+              <Button onClick={handleCreateRole}>ایجاد نقش</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
 
-      {/* لیست نقش‌ها */}
       <Card>
         <CardHeader>
-          <CardTitle>لیست نقش‌ها</CardTitle>
+          <CardTitle>نقش‌های تعریف‌شده</CardTitle>
+          <CardDescription>
+            در این بخش می‌توانید نقش‌های موجود را مشاهده، ویرایش یا حذف کنید.
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          {roles.length === 0 ? (
-            <p className="text-center text-slate-400">هیچ نقشی یافت نشد.</p>
-          ) : (
+          <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>کد</TableHead>
+                  <TableHead className="w-[100px]">کد</TableHead>
                   <TableHead>نام</TableHead>
                   <TableHead>مجوزها</TableHead>
-                  <TableHead className="w-[100px]">عملیات</TableHead>
+                  <TableHead className="w-[120px] text-center">عملیات</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {roles.map((role) => (
-                  <TableRow key={role.id}>
-                    <TableCell>{role.code}</TableCell>
-                    <TableCell>{role.name}</TableCell>
-                    <TableCell>
-                      {role.permissions?.map((p) => p.name).join("، ") ||
-                        "بدون مجوز"}
+                {roles.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center">
+                      <div className="flex flex-col items-center justify-center text-muted-foreground">
+                        <Shield className="h-8 w-8 mb-2 opacity-20" />
+                        <p>هیچ نقشی تعریف نشده است</p>
+                        <p className="text-sm">برای شروع، یک نقش جدید ایجاد کنید.</p>
+                      </div>
                     </TableCell>
+                  </TableRow>
+                ) : (
+                  roles.map((role) => (
+                    <TableRow key={role.id}>
+                      <TableCell className="font-mono text-xs">{role.code}</TableCell>
+                      <TableCell className="font-medium">{role.name}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {role.permissions.length > 0 ? (
+                            role.permissions.slice(0, 3).map((perm) => (
+                              <Badge key={perm.id} variant="secondary" className="text-xs">
+                                {perm.name}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-xs text-muted-foreground">بدون مجوز</span>
+                          )}
+                          {role.permissions.length > 3 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{role.permissions.length - 3} بیشتر
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center justify-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-primary"
+                            onClick={() => openEditDialog(role)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                            onClick={() => handleDeleteRole(role.id, role.code)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>ویرایش نقش</DialogTitle>
+            <DialogDescription>
+              اطلاعات نقش را تغییر دهید و مجوزهای آن را به‌روزرسانی کنید.
+            </DialogDescription>
+          </DialogHeader>
+          {editingRole && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-role-name">نام نقش</Label>
+                <Input
+                  id="edit-role-name"
+                  value={editingRole.name}
+                  onChange={(e) => setEditingRole({ ...editingRole, name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-3">
+                <Label>مجوزها</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {allPermissions.map((group) => (
+                    <Card key={group.id} className="border border-border/50">
+                      <CardHeader className="py-2 px-3">
+                        <CardTitle className="text-sm flex items-center gap-2">
+                          <group.icon className="h-4 w-4 text-muted-foreground" />
+                          {group.label}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="py-2 px-3 grid grid-cols-1 gap-1">
+                        {group.permissions.length > 0 ? (
+                          group.permissions.map((perm) => {
+                            const isChecked = editingRole.permissions.some(p => p.id === perm.id);
+                            return (
+                              <div key={perm.id} className="flex items-center space-x-2 rtl:space-x-reverse">
+                                <Checkbox
+                                  id={`edit-${perm.id}`}
+                                  checked={isChecked}
+                                  onCheckedChange={() => togglePermission(perm.id)}
+                                />
+                                <Label htmlFor={`edit-${perm.id}`} className="text-sm cursor-pointer">
+                                  {perm.name}
+                                </Label>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <span className="text-xs text-muted-foreground">بدون مجوز</span>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>انصراف</Button>
+            <Button onClick={handleUpdateRole}>ذخیره تغییرات</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function SkeletonLoader() {
+  return (
+    <div className="space-y-6 p-6 max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-72 mt-2" />
+        </div>
+        <Skeleton className="h-10 w-32" />
+      </div>
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-4 w-60" />
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead><Skeleton className="h-4 w-16" /></TableHead>
+                  <TableHead><Skeleton className="h-4 w-16" /></TableHead>
+                  <TableHead><Skeleton className="h-4 w-32" /></TableHead>
+                  <TableHead><Skeleton className="h-4 w-16" /></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openEditDialog(role)}
-                        >
-                          <Pencil size={16} />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-500"
-                          onClick={() => handleDeleteRole(role.id)}
-                        >
-                          <Trash2 size={16} />
-                        </Button>
+                        <Skeleton className="h-5 w-16" />
+                        <Skeleton className="h-5 w-16" />
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex justify-center gap-2">
+                        <Skeleton className="h-8 w-8 rounded-full" />
+                        <Skeleton className="h-8 w-8 rounded-full" />
                       </div>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-          )}
+          </div>
         </CardContent>
       </Card>
-
-      {/* دیالوگ ویرایش */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>ویرایش نقش</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleEditRole} className="space-y-4">
-            <Input
-              placeholder="نام نقش"
-              value={editForm.name}
-              onChange={(e) =>
-                setEditForm({ ...editForm, name: e.target.value })
-              }
-              required
-            />
-            <div>
-              <label className="block text-sm font-medium mb-2">مجوزها</label>
-              <div className="flex flex-wrap gap-3">
-                {permissions.map((p) => (
-                  <label
-                    key={p.id}
-                    className="flex items-center gap-1 text-sm"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={editForm.permission_ids.includes(p.id)}
-                      onChange={(e) => {
-                        const newIds = e.target.checked
-                          ? [...editForm.permission_ids, p.id]
-                          : editForm.permission_ids.filter(
-                              (id) => id !== p.id
-                            );
-                        setEditForm({ ...editForm, permission_ids: newIds });
-                      }}
-                      value={p.id}
-                    />
-                    {p.name}
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>
-                انصراف
-              </Button>
-              <Button type="submit">ذخیره تغییرات</Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

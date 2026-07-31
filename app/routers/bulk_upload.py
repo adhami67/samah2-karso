@@ -20,15 +20,18 @@ def bulk_upload_users(
 
     try:
         contents = file.file.read()
-        df = pd.read_excel(BytesIO(contents))
+        # ردیف اول توضیحات است، ردیف دوم نام واقعی ستون‌ها
+        df = pd.read_excel(BytesIO(contents), header=1)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"خطا در خواندن فایل: {str(e)}")
 
-    required_columns = ['national_id', 'full_name', 'password']
+    # ستون‌های ضروری برای ایجاد دانش‌آموز
+    required_columns = ['first_name', 'last_name', 'username', 'password']
     missing_cols = [col for col in required_columns if col not in df.columns]
     if missing_cols:
         raise HTTPException(status_code=400, detail=f"ستون‌های ضروری وجود ندارند: {', '.join(missing_cols)}")
 
+    # دریافت یا ایجاد نقش دانش‌آموز
     student_role = db.query(Role).filter(Role.code == "student").first()
     if not student_role:
         student_role = Role(code="student", name="دانش‌آموز")
@@ -41,31 +44,48 @@ def bulk_upload_users(
 
     for idx, row in df.iterrows():
         try:
-            national_id = str(row.get('national_id', '')).strip()
-            full_name = str(row.get('full_name', '')).strip()
+            first_name = str(row.get('first_name', '')).strip()
+            last_name = str(row.get('last_name', '')).strip()
+            username = str(row.get('username', '')).strip()        # کد ملی دانش‌آموز
             password = str(row.get('password', '')).strip()
 
-            if not national_id or not full_name or not password:
-                failed.append({"row": idx + 2, "error": "اطلاعات ناقص"})
+            if not first_name or not last_name or not username or not password:
+                failed.append({"row": idx + 3, "error": "اطلاعات ناقص (نام، نام خانوادگی، کد ملی یا رمز عبور)"})
                 continue
 
-            if db.query(User).filter(User.national_id == national_id).first():
-                failed.append({"row": idx + 2, "error": "کد ملی تکراری"})
+            # بررسی تکراری بودن کد ملی
+            if db.query(User).filter(User.national_id == username).first():
+                failed.append({"row": idx + 3, "error": "کد ملی تکراری"})
                 continue
 
-            grade = str(row['grade']).strip() if pd.notna(row.get('grade')) else None
-            class_name = str(row['class']).strip() if pd.notna(row.get('class')) else None
-            father_name = str(row.get('father_name', '')).strip() if pd.notna(row.get('father_name')) else None
-            mother_name = str(row.get('mother_name', '')).strip() if pd.notna(row.get('mother_name')) else None
-            phone = str(row.get('phone', '')).strip() if pd.notna(row.get('phone')) else None
-            parent_phone = str(row.get('parent_phone', '')).strip() if pd.notna(row.get('parent_phone')) else None
-            address = str(row.get('address', '')).strip() if pd.notna(row.get('address')) else None
-            birth_date = str(row.get('birth_date', '')).strip() if pd.notna(row.get('birth_date')) else None
-            gender = str(row.get('gender', '')).strip() if pd.notna(row.get('gender')) else None
+            full_name = f"{first_name} {last_name}".strip()
+
+            # پایه و کلاس
+            grade = str(row.get('grade', '')).strip() if pd.notna(row.get('grade')) else None
+            class_name = str(row.get('class', '')).strip() if pd.notna(row.get('class')) else None
+
+            # شماره همراه پدر (ستون mobile)
+            father_phone = str(row.get('mobile', '')).strip() if pd.notna(row.get('mobile')) else None
+
+            # نام پدر
+            father_first = str(row.get('father_first_name', '')).strip() if pd.notna(row.get('father_first_name')) else None
+            father_last = str(row.get('father_last_name', '')).strip() if pd.notna(row.get('father_last_name')) else None
+            father_name = f"{father_first} {father_last}".strip() if father_first or father_last else None
+
+            # نام مادر
+            mother_first = str(row.get('mother_first_name', '')).strip() if pd.notna(row.get('mother_first_name')) else None
+            mother_last = str(row.get('mother_last_name', '')).strip() if pd.notna(row.get('mother_last_name')) else None
+            mother_name = f"{mother_first} {mother_last}".strip() if mother_first or mother_last else None
+
+            # شماره والدین (فعلاً شماره پدر به‌عنوان parent_phone ذخیره می‌شود)
+            parent_phone = father_phone
+
+            # شماره خود دانش‌آموز خالی می‌ماند (در صورت نیاز می‌توان از ستون دیگری پر کرد)
+            phone = None
 
             user = User(
-                username=national_id,
-                national_id=national_id,
+                username=username,             # کد ملی
+                national_id=username,
                 full_name=full_name,
                 password_hash=hash_password(password),
                 is_active=True,
@@ -75,16 +95,13 @@ def bulk_upload_users(
                 mother_name=mother_name,
                 parent_phone=parent_phone,
                 phone=phone,
-                address=address,
-                birth_date=birth_date,
-                gender=gender,
                 roles=[student_role]
             )
             db.add(user)
             db.flush()
-            success.append({"national_id": national_id, "full_name": full_name})
+            success.append({"national_id": username, "full_name": full_name})
         except Exception as e:
-            failed.append({"row": idx + 2, "error": str(e)})
+            failed.append({"row": idx + 3, "error": str(e)})
 
     db.commit()
     return {"total": total, "success": success, "failed": failed}
