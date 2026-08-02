@@ -5,7 +5,7 @@ from pydantic import Field
 from app.schemas.base import ORMModel
 
 class ActivityCreate(ORMModel):
-    work_group_id: str = Field(..., description="شناسه حوزه")  # تغییر نام
+    work_group_id: str = Field(..., description="شناسه حوزه")
     work_type_id: str = Field(..., description="شناسه نوع کار")
     work_priority_id: str = Field(..., description="شناسه اولویت")
     parent_work_id: Optional[str] = Field(None, description="شناسه کار والد")
@@ -13,14 +13,16 @@ class ActivityCreate(ORMModel):
     subject: str = Field(min_length=1, max_length=255, description="عنوان کار")
     description: Optional[str] = Field(None, description="توضیحات")
     due_at: Optional[datetime] = Field(None, description="مهلت انجام")
+    activity_type: Optional[str] = Field("task", description="نوع فعالیت")   # ← اضافه شد
     
-    receiver_user_ids: List[str] = Field(..., description="لیست شناسه‌های مجریان")
+    receiver_user_ids: List[str] = Field([], description="لیست شناسه‌های مجریان")  # ← حالا اختیاری با مقدار پیش‌فرض خالی
 
 class ActivityUpdate(ORMModel):
     subject: Optional[str] = Field(None, min_length=1, max_length=255)
     description: Optional[str] = None
     status: Optional[str] = None
     due_at: Optional[datetime] = None
+    activity_type: Optional[str] = None   # ← اضافه شد
 
 class ActivityRead(ORMModel):
     id: str

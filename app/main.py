@@ -18,6 +18,7 @@ from app.routers import (
     activities,
     responses,
     bulk_upload,
+    workspaces,
 )
 
 Base.metadata.create_all(bind=engine)
@@ -43,6 +44,7 @@ app.include_router(work_message_router.router)
 app.include_router(work_attachment_router.router)
 app.include_router(report_router.router)
 app.include_router(notification_router.router)
+app.include_router(workspaces.router)
 # اصلاح ۱: اضافه کردن پیشوند برای آپلود انبوه
 app.include_router(bulk_upload.router, prefix="/api/bulk", tags=["Bulk"])
 # اصلاح ۲: اضافه کردن پیشوند برای پاسخ‌ها (مطابق معماری اصلی)

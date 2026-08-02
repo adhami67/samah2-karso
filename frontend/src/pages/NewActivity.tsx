@@ -1,10 +1,19 @@
+// frontend/src/pages/NewActivity.tsx
 import { useState, useEffect, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ArrowLeft, PlusCircle } from "lucide-react";
+import { toast } from "sonner";
 
 interface Workspace {
   id: string;
@@ -12,7 +21,7 @@ interface Workspace {
 }
 
 export default function NewActivity() {
-  const [title, setTitle] = useState("");
+  const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
   const [activityType, setActivityType] = useState("task");
   const [dueAt, setDueAt] = useState("");
@@ -20,17 +29,16 @@ export default function NewActivity() {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loadingWorkspaces, setLoadingWorkspaces] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // دریافت خودکار حوزه‌های کاربر
+  // دریافت خودکار حوزه‌ها
   useEffect(() => {
     const fetchWorkspaces = async () => {
       try {
-        const data = await api.get<Workspace[]>("/workspaces/");
+        const data = await api.get<Workspace[]>("/workspaces");
         setWorkspaces(data);
         if (data.length > 0) {
-          setWorkspaceId(data[0].id); // انتخاب اولین حوزه به‌صورت پیش‌فرض
+          setWorkspaceId(data[0].id);
         }
       } catch (err) {
         console.error("خطا در بارگذاری حوزه‌ها", err);
@@ -44,22 +52,24 @@ export default function NewActivity() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!workspaceId) {
-      setError("لطفاً یک حوزه را انتخاب کنید.");
+      toast.error("لطفاً یک حوزه را انتخاب کنید.");
       return;
     }
     setLoading(true);
-    setError("");
     try {
-      await api.post("/activities/", {
-        workspace_id: workspaceId,
-        title,
-        description,
+      await api.post("/activities", {
+        work_group_id: workspaceId,
+        work_type_id: "type1",
+        work_priority_id: "prio1",
+        subject: subject,
+        description: description,
         activity_type: activityType,
         due_at: dueAt ? new Date(dueAt).toISOString() : null,
       });
+      toast.success("مسئولیت با موفقیت ایجاد شد");
       navigate("/activities");
     } catch (err: any) {
-      setError(err.message || "خطا در ایجاد مسئولیت");
+      toast.error(err.message || "خطا در ایجاد مسئولیت");
     } finally {
       setLoading(false);
     }
@@ -89,29 +99,39 @@ export default function NewActivity() {
                 {loadingWorkspaces ? (
                   <p className="text-sm text-slate-400">در حال بارگیری حوزه‌ها...</p>
                 ) : workspaces.length === 0 ? (
-                  <p className="text-sm text-red-500">هیچ حوزه‌ای در دسترس نیست. ابتدا یک حوزه بسازید.</p>
+                  <p className="text-sm text-red-500">
+                    هیچ حوزه‌ای در دسترس نیست. ابتدا یک حوزه بسازید.
+                  </p>
                 ) : (
-                  <select
-                    className="w-full border rounded-lg px-3 py-2 bg-white"
+                  <Select
                     value={workspaceId}
-                    onChange={(e) => setWorkspaceId(e.target.value)}
-                    required
+                    onValueChange={(value) => setWorkspaceId(value)}
                   >
-                    {workspaces.map((ws) => (
-                      <option key={ws.id} value={ws.id}>{ws.name}</option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="انتخاب حوزه" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {workspaces.map((ws) => (
+                        <SelectItem key={ws.id} value={ws.id}>
+                          {ws.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 )}
               </div>
 
+              {/* عنوان */}
               <div>
                 <label className="block text-sm font-medium mb-1">عنوان</label>
                 <Input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
                   required
                 />
               </div>
+
+              {/* توضیحات */}
               <div>
                 <label className="block text-sm font-medium mb-1">توضیحات</label>
                 <textarea
@@ -120,6 +140,8 @@ export default function NewActivity() {
                   onChange={(e) => setDescription(e.target.value)}
                 />
               </div>
+
+              {/* نوع و مهلت */}
               <div className="flex gap-4">
                 <div className="flex-1">
                   <label className="block text-sm font-medium mb-1">نوع مسئولیت</label>
@@ -144,8 +166,13 @@ export default function NewActivity() {
                   />
                 </div>
               </div>
-              {error && <p className="text-red-500 text-sm">{error}</p>}
-              <Button type="submit" className="w-full" disabled={loading || loadingWorkspaces}>
+
+              {/* دکمهٔ ارسال */}
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={loading || loadingWorkspaces}
+              >
                 {loading ? "در حال ایجاد..." : "ایجاد مسئولیت"}
               </Button>
             </form>

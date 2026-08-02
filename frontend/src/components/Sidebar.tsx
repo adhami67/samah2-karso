@@ -14,6 +14,7 @@ import {
   Settings,
   Shield,
   GraduationCap,
+  Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +27,7 @@ interface NavItem {
 
 const allNavItems: NavItem[] = [
   { label: "داشبورد", icon: <LayoutDashboard size={20} />, path: "/dashboard" },
+  { label: "حوزه‌ها", icon: <Layers size={20} />, path: "/workspaces", roles: ["system_admin", "school_admin"] },
   { label: "فعالیت‌ها", icon: <CheckSquare size={20} />, path: "/activities" },
   { label: "اشخاص", icon: <Users size={20} />, path: "/people", roles: ["system_admin", "school_admin"] },
   { label: "آموزش", icon: <School size={20} />, path: "/education", roles: ["teacher", "school_admin"] },

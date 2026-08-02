@@ -1,7 +1,7 @@
 const API_BASE = "http://127.0.0.1:8000/api";
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const token = localStorage.getItem("access_token");   // دقت کن: کلید "access_token"
+  const token = localStorage.getItem("access_token");
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(options?.headers as Record<string, string>),

@@ -1,5 +1,4 @@
-// frontend/src/pages/Activities.tsx
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,14 +15,14 @@ import {
   FileText,
 } from "lucide-react";
 
-// ✅ اصلاح: تطابق با مدل بک‌اند (work_group_id به جای workspace_id)
+// تطبیق با مدل Work در بک‌اند
 interface Activity {
   id: string;
   work_group_id: string;
   work_type_id: string;
   work_priority_id: string;
   parent_work_id: string | null;
-  subject: string;        // ← در بک‌اند title نیست، subject است
+  subject: string;
   description: string | null;
   status: string;
   sender_user_id: string;
@@ -34,16 +33,15 @@ interface Activity {
   updated_at: string;
 }
 
-// نگاشت وضعیت‌ها
-const statusMap: Record<string, { label: string; color: string; icon: JSX.Element }> = {
-  draft: { label: "پیش‌نویس", color: "bg-gray-100 text-gray-700", icon: <FileText size={16} /> },
-  published: { label: "منتشرشده", color: "bg-blue-100 text-blue-700", icon: <Send size={16} /> },
-  in_progress: { label: "در حال انجام", color: "bg-amber-100 text-amber-700", icon: <Clock size={16} /> },
-  submitted: { label: "ارسال‌شده", color: "bg-indigo-100 text-indigo-700", icon: <Send size={16} /> },
-  needs_revision: { label: "نیاز به اصلاح", color: "bg-rose-100 text-rose-700", icon: <AlertTriangle size={16} /> },
-  approved: { label: "تأییدشده", color: "bg-emerald-100 text-emerald-700", icon: <CheckCircle size={16} /> },
-  completed: { label: "تکمیل‌شده", color: "bg-green-100 text-green-700", icon: <CheckCircle size={16} /> },
-  archived: { label: "بایگانی", color: "bg-slate-100 text-slate-500", icon: <FileText size={16} /> },
+const statusMap: Record<string, { label: string; cssClass: string; icon: React.ReactNode }> = {
+  draft:          { label: "پیش‌نویس",       cssClass: "status-badge--info",           icon: <FileText size={16} /> },
+  published:      { label: "منتشرشده",       cssClass: "status-badge--info",           icon: <Send size={16} /> },
+  in_progress:    { label: "در حال انجام",    cssClass: "status-badge--warning",        icon: <Clock size={16} /> },
+  submitted:      { label: "ارسال‌شده",      cssClass: "status-badge--info",           icon: <Send size={16} /> },
+  needs_revision: { label: "نیاز به اصلاح",  cssClass: "status-badge--needs_revision", icon: <AlertTriangle size={16} /> },
+  approved:       { label: "تأییدشده",       cssClass: "status-badge--success",        icon: <CheckCircle size={16} /> },
+  completed:      { label: "تکمیل‌شده",      cssClass: "status-badge--success",        icon: <CheckCircle size={16} /> },
+  archived:       { label: "بایگانی",         cssClass: "status-badge--inactive",       icon: <FileText size={16} /> },
 };
 
 export default function Activities() {
@@ -61,10 +59,8 @@ export default function Activities() {
       const params = new URLSearchParams();
       if (search) params.append("search", search);
       if (statusFilter) params.append("status", statusFilter);
-      
-      // ✅ مسیر درست: /activities/ (بدون api اضافی چون api.ts baseURL دارد)
-      const data = await api.get<Activity[]>(`/activities/?${params.toString()}`);
-      console.log("📦 داده‌های دریافت‌شده:", data);
+
+      const data = await api.get<Activity[]>(`/activities?${params.toString()}`);
       setActivities(data);
     } catch (err: any) {
       console.error("❌ خطا در دریافت فعالیت‌ها:", err);
@@ -83,7 +79,6 @@ export default function Activities() {
     fetchActivities();
   };
 
-  // وقتی search تغییر می‌کند، با یک تأخیر کوچک جستجو کنیم (اختیاری)
   useEffect(() => {
     const timer = setTimeout(() => {
       if (search) fetchActivities();
@@ -94,10 +89,8 @@ export default function Activities() {
   return (
     <div className="min-h-screen">
       <main className="p-6 max-w-4xl mx-auto">
-        {/* عنوان صفحه */}
         <h1 className="text-2xl font-bold text-slate-800 mb-4">همهٔ فعالیت‌ها</h1>
 
-        {/* نوار جستجو و فیلتر */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="relative flex-1">
             <Search className="absolute right-3 top-2.5 text-slate-400" size={20} />
@@ -131,7 +124,6 @@ export default function Activities() {
           </Button>
         </div>
 
-        {/* نمایش خطا */}
         {error && (
           <Card className="border-rose-200 bg-rose-50 mb-4">
             <CardContent className="p-4 text-rose-600 text-center">
@@ -140,7 +132,6 @@ export default function Activities() {
           </Card>
         )}
 
-        {/* لیست فعالیت‌ها */}
         {loading ? (
           <p className="text-center text-slate-500">در حال بارگیری...</p>
         ) : activities.length === 0 ? (
@@ -160,7 +151,7 @@ export default function Activities() {
         ) : (
           <div className="space-y-3">
             {activities.map((act) => {
-              const st = statusMap[act.status] || { label: act.status, color: "bg-gray-100", icon: null };
+              const st = statusMap[act.status] || { label: act.status, cssClass: "status-badge--info", icon: null };
               return (
                 <Card
                   key={act.id}
@@ -169,7 +160,7 @@ export default function Activities() {
                 >
                   <CardContent className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className={`p-2 rounded-full ${st.color}`}>
+                      <div className={`p-2 rounded-full ${st.cssClass}`}>
                         {st.icon}
                       </div>
                       <div>
@@ -182,7 +173,7 @@ export default function Activities() {
                         )}
                       </div>
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-full ${st.color}`}>
+                    <span className={`status-badge ${st.cssClass}`}>
                       {st.label}
                     </span>
                   </CardContent>

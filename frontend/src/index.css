@@ -22,6 +22,15 @@
     min-height: 100vh;
   }
 
+  /* راست‌چین کردن تمام جداول */
+  table {
+    direction: rtl;
+  }
+
+    th {
+    text-align: right !important;
+  }
+
   ::-webkit-scrollbar {
     width: 6px;
   }
@@ -34,6 +43,7 @@
   }
 }
 
+/* کارت شیشه‌ای */
 .glass-card {
   background: var(--glass-bg);
   backdrop-filter: blur(15px);
@@ -45,4 +55,62 @@
 .glass-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 20px 40px -10px rgba(234, 88, 12, 0.25);
+}
+
+/* وضعیت‌های زیبا (Status Badges) */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.8rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  animation: fadeIn 0.3s ease;
+}
+
+.status-badge--active,
+.status-badge--success,
+.status-badge--done {
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+.status-badge--inactive,
+.status-badge--archived {
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+.status-badge--warning,
+.status-badge--pending,
+.status-badge--needs_revision {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+.status-badge--error,
+.status-badge--danger,
+.status-badge--blocked {
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  color: #991b1b;
+  border: 1px solid #f87171;
+}
+
+.status-badge--info,
+.status-badge--draft {
+  background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+  color: #075985;
+  border: 1px solid #7dd3fc;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }

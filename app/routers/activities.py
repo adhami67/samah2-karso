@@ -1,4 +1,3 @@
-# app/routers/activities.py
 from typing import Optional
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -18,6 +17,8 @@ from app.core.constants import WORK_STATUS_DRAFT, WORK_STATUS_PUBLISHED
 
 router = APIRouter()
 
+# ایجاد فعالیت – هم با اسلش هم بدون اسلش
+@router.post("", response_model=ActivityRead, status_code=status.HTTP_201_CREATED)
 @router.post("/", response_model=ActivityRead, status_code=status.HTTP_201_CREATED)
 def create_activity(
     payload: ActivityCreate,
@@ -44,6 +45,7 @@ def publish_activity(
         raise HTTPException(status_code=400, detail=str(e))
     return activity
 
+@router.get("", response_model=list[ActivityRead])
 @router.get("/", response_model=list[ActivityRead])
 def list_activities(
     db: Session = Depends(get_db),
@@ -96,7 +98,6 @@ def update_activity(
     if not activity or activity.is_deleted:
         raise HTTPException(status_code=404, detail="کار مورد نظر یافت نشد")
 
-    # فقط فرستنده یا مدیر حوزه می‌تواند ویرایش کند
     if activity.sender_user_id != current_user.id:
         workspace = db.get(WorkGroup, activity.work_group_id)
         if workspace.owner_user_id != current_user.id:
@@ -128,7 +129,6 @@ def assign_activity(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # بررسی وجود کار
     activity = db.get(Work, work_id)
     if not activity or activity.is_deleted:
         raise HTTPException(status_code=404, detail="کار مورد نظر یافت نشد")
@@ -136,10 +136,9 @@ def assign_activity(
     service = ActivityService(db)
     try:
         assignment = service.assign_to_user(
-            work_id=work_id,
-            receiver_user_id=payload.receiver_user_id,
-            private_note=payload.private_note,
-            reply_deadline_time=payload.reply_deadline_time,
+            activity=activity,                     # خود شیء Activity
+            assignee_id=payload.receiver_user_id,  # یا هر نامی که سرویس انتظار دارد
+            role=payload.private_note or "executor",
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

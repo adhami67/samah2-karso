@@ -11,6 +11,8 @@ import Users from "@/pages/Users";  // اضافه کنید
 import Roles from "@/pages/Roles";
 import StudentsGrouped from "@/pages/StudentsGrouped";
 import { Toaster } from "sonner"; // اضافه کنید
+import Workspaces from "@/pages/Workspaces";
+
 
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -40,6 +42,7 @@ function App() {
             <Route path="/people" element={<Users />} />
             <Route path="/roles" element={<Roles />} />
             <Route path="/students" element={<StudentsGrouped />} />
+            <Route path="/workspaces" element={<Workspaces />} />
             {/* مسیرهای جدید برای آینده */}
             <Route path="/people" element={<div>صفحه اشخاص</div>} />
             <Route path="/calendar" element={<div>صفحه تقویم</div>} />

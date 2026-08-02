@@ -1,11 +1,13 @@
 import { useEffect, useState, FormEvent } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Calendar,
   Clock,
@@ -15,8 +17,9 @@ import {
   Archive,
   Timer,
 } from "lucide-react";
+import { UserSearch } from "@/components/UserSearch";
+import { toast } from "sonner";
 
-// اینترفیس‌ها (بدون تغییر)
 interface Activity {
   id: string;
   subject: string;
@@ -26,13 +29,18 @@ interface Activity {
   due_at: string | null;
   work_group_id: string;
 }
+
 interface Assignment {
   id: string;
   assignee_id: string;
+  assignee_name?: string;
   assignee_type: string;
   role: string;
-  created_at: string;
+  status?: string;
+  reply_deadline_time?: string;
+  receiver_user?: { full_name?: string };
 }
+
 interface Response {
   id: string;
   assignment_id: string;
@@ -40,6 +48,7 @@ interface Response {
   status: string;
   created_at: string;
 }
+
 interface Evaluation {
   id: string;
   response_id: string;
@@ -47,6 +56,7 @@ interface Evaluation {
   note: string;
   status: string;
 }
+
 interface TimelineEvent {
   id: string;
   activity_id: string;
@@ -55,15 +65,15 @@ interface TimelineEvent {
   created_at: string;
 }
 
-const statusMap: Record<string, { label: string; color: string }> = {
-  draft: { label: "پیش‌نویس", color: "bg-gray-100 text-gray-700" },
-  published: { label: "منتشرشده", color: "bg-blue-100 text-blue-700" },
-  in_progress: { label: "در حال انجام", color: "bg-amber-100 text-amber-700" },
-  submitted: { label: "ارسال‌شده", color: "bg-indigo-100 text-indigo-700" },
-  needs_revision: { label: "نیاز به اصلاح", color: "bg-rose-100 text-rose-700" },
-  approved: { label: "تأییدشده", color: "bg-emerald-100 text-emerald-700" },
-  completed: { label: "تکمیل‌شده", color: "bg-green-100 text-green-700" },
-  archived: { label: "بایگانی", color: "bg-slate-100 text-slate-500" },
+const statusMap: Record<string, { label: string; cssClass: string }> = {
+  draft: { label: "پیش‌نویس", cssClass: "status-badge--info" },
+  published: { label: "منتشرشده", cssClass: "status-badge--info" },
+  in_progress: { label: "در حال انجام", cssClass: "status-badge--warning" },
+  submitted: { label: "ارسال‌شده", cssClass: "status-badge--info" },
+  needs_revision: { label: "نیاز به اصلاح", cssClass: "status-badge--needs_revision" },
+  approved: { label: "تأییدشده", cssClass: "status-badge--success" },
+  completed: { label: "تکمیل‌شده", cssClass: "status-badge--success" },
+  archived: { label: "بایگانی", cssClass: "status-badge--inactive" },
 };
 
 export default function ActivityDetail() {
@@ -76,18 +86,14 @@ export default function ActivityDetail() {
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
 
-  // فرم‌های واگذاری، پاسخ، ارزیابی
-  const [assigneeId, setAssigneeId] = useState("");
-  const [assignRole, setAssignRole] = useState("executor");
+  const [selectedAssignee, setSelectedAssignee] = useState<{ id: string; user: any } | null>(null);
   const [responseBody, setResponseBody] = useState("");
   const [evalScore, setEvalScore] = useState("");
   const [evalNote, setEvalNote] = useState("");
   const [evalStatus, setEvalStatus] = useState("approved");
 
-  // حالت‌های جدید برای مدیریت معوقه
   const [newDueDate, setNewDueDate] = useState("");
   const [showExtend, setShowExtend] = useState(false);
-  const [archiveNote, setArchiveNote] = useState("");
 
   const [loading, setLoading] = useState(true);
 
@@ -97,18 +103,17 @@ export default function ActivityDetail() {
       setActivity(data);
 
       const [assigns, resps] = await Promise.all([
-        api.get<Assignment[]>(`/assignments/?activity_id=${id}`).catch(() => []),
-        api.get<Response[]>(`/responses/?activity_id=${id}`).catch(() => []),
+        api.get<Assignment[]>(`/assignments?activity_id=${id}`).catch(() => []),
+        api.get<Response[]>(`/responses?activity_id=${id}`).catch(() => []),
       ]);
-      const assignmentList = Array.isArray(assigns) ? assigns : [];
+      setAssignments(Array.isArray(assigns) ? assigns : []);
       const responseList = Array.isArray(resps) ? resps : [];
-      setAssignments(assignmentList);
       setResponses(responseList);
 
       if (responseList.length > 0) {
         const lastResp = responseList[responseList.length - 1];
         try {
-          const evalList = await api.get<Evaluation[]>(`/evaluations/?response_id=${lastResp.id}`);
+          const evalList = await api.get<Evaluation[]>(`/evaluations?response_id=${lastResp.id}`);
           setEvaluation(evalList.length > 0 ? evalList[0] : null);
         } catch {
           setEvaluation(null);
@@ -118,7 +123,7 @@ export default function ActivityDetail() {
       }
 
       try {
-        const events = await api.get<TimelineEvent[]>(`/timeline/?activity_id=${id}`);
+        const events = await api.get<TimelineEvent[]>(`/timeline?activity_id=${id}`);
         setTimeline(Array.isArray(events) ? events : []);
       } catch {
         setTimeline([]);
@@ -136,34 +141,39 @@ export default function ActivityDetail() {
 
   const handleAssign = async (e: FormEvent) => {
     e.preventDefault();
+    if (!selectedAssignee) {
+      toast.error("لطفاً یک کاربر را انتخاب کنید");
+      return;
+    }
     try {
       await api.post(`/activities/${id}/assign`, {
-        receiver_user_id: assigneeId,
-        private_note: assignRole,
+        receiver_user_ids: [selectedAssignee.id],
       });
-      setAssigneeId("");
+      toast.success(`کار به ${selectedAssignee.user.full_name} ارجاع شد`);
+      setSelectedAssignee(null);
       fetchActivity();
     } catch (err: any) {
-      alert(err.message);
+      toast.error(err.message);
     }
   };
 
   const handleResponse = async (e: FormEvent) => {
     e.preventDefault();
     if (assignments.length === 0) {
-      alert("ابتدا فعالیت را به یک کاربر واگذار کنید.");
+      toast.error("ابتدا فعالیت را به یک کاربر واگذار کنید.");
       return;
     }
     const assignmentId = assignments[0].id;
     try {
-      await api.post("/responses/", {
+      await api.post("/responses", {
         assignment_id: assignmentId,
         body: responseBody,
       });
       setResponseBody("");
+      toast.success("پاسخ با موفقیت ثبت شد.");
       fetchActivity();
     } catch (err: any) {
-      alert(err.message);
+      toast.error(err.message);
     }
   };
 
@@ -171,11 +181,11 @@ export default function ActivityDetail() {
     e.preventDefault();
     const latestResponse = responses[responses.length - 1];
     if (!latestResponse) {
-      alert("ابتدا باید پاسخی ثبت شده باشد.");
+      toast.error("ابتدا باید پاسخی ثبت شده باشد.");
       return;
     }
     try {
-      await api.post("/evaluations/", {
+      await api.post("/evaluations", {
         response_id: latestResponse.id,
         score: evalScore ? Number(evalScore) : null,
         note: evalNote,
@@ -183,42 +193,43 @@ export default function ActivityDetail() {
       });
       setEvalScore("");
       setEvalNote("");
+      toast.success("ارزیابی ثبت شد.");
       fetchActivity();
     } catch (err: any) {
-      alert(err.message);
+      toast.error(err.message);
     }
   };
 
   const handleStatusChange = async (newStatus: string) => {
     try {
       await api.patch(`/activities/${id}`, { status: newStatus });
+      toast.success("وضعیت با موفقیت تغییر کرد.");
       fetchActivity();
     } catch (err: any) {
-      alert(err.message);
+      toast.error(err.message);
     }
   };
 
-  // اقدامات معوقه
   const handleExtendDeadline = async () => {
     if (!newDueDate) return;
     try {
       await api.patch(`/activities/${id}`, { due_at: new Date(newDueDate).toISOString() });
       setShowExtend(false);
       setNewDueDate("");
+      toast.success("مهلت با موفقیت تمدید شد.");
       fetchActivity();
     } catch (err: any) {
-      alert(err.message);
+      toast.error(err.message);
     }
   };
 
-  const handleArchiveWithNote = async () => {
+  const handleArchive = async () => {
     try {
-      // ابتدا فعالیت را بایگانی می‌کنیم
       await api.patch(`/activities/${id}`, { status: "archived" });
-      // در صورت تمایل می‌توانید یک یادداشت از طریق endpoint خاص ثبت کنید (اینجا فقط status تغییر می‌کند)
+      toast.success("فعالیت بایگانی شد.");
       fetchActivity();
     } catch (err: any) {
-      alert(err.message);
+      toast.error(err.message);
     }
   };
 
@@ -232,7 +243,7 @@ export default function ActivityDetail() {
   if (loading) return <div className="p-8 text-center">در حال بارگیری...</div>;
   if (!activity) return <div className="p-8 text-center text-red-500">فعالیت یافت نشد.</div>;
 
-  const st = statusMap[activity.status] || { label: activity.status, color: "bg-gray-100" };
+  const st = statusMap[activity.status] || { label: activity.status, cssClass: "status-badge--info" };
 
   return (
     <div className="space-y-6">
@@ -245,36 +256,19 @@ export default function ActivityDetail() {
               <span>این فعالیت از موعد مقرر گذشته است. اقدامی انتخاب کنید:</span>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowExtend(!showExtend)}
-              >
+              <Button variant="outline" size="sm" onClick={() => setShowExtend(!showExtend)}>
                 <Timer size={16} className="ml-1" /> تمدید مهلت
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate(`/activities/${id}?tab=assign`)}
-              >
+              <Button variant="outline" size="sm" onClick={() => navigate(`/activities/${id}?tab=assign`)}>
                 <ArrowRightLeft size={16} className="ml-1" /> واگذاری دوباره
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleArchiveWithNote}
-              >
+              <Button variant="outline" size="sm" onClick={handleArchive}>
                 <Archive size={16} className="ml-1" /> بایگانی (لغو)
               </Button>
             </div>
             {showExtend && (
               <div className="flex items-center gap-2">
-                <Input
-                  type="datetime-local"
-                  value={newDueDate}
-                  onChange={(e) => setNewDueDate(e.target.value)}
-                  className="w-auto"
-                />
+                <Input type="datetime-local" value={newDueDate} onChange={(e) => setNewDueDate(e.target.value)} className="w-auto" />
                 <Button size="sm" onClick={handleExtendDeadline}>ثبت تاریخ جدید</Button>
                 <Button size="sm" variant="ghost" onClick={() => setShowExtend(false)}>انصراف</Button>
               </div>
@@ -288,11 +282,9 @@ export default function ActivityDetail() {
         <CardContent className="p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-slate-800">{activity.subject}</h2>
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${st.color}`}>{st.label}</span>
+            <span className={`status-badge ${st.cssClass}`}>{st.label}</span>
           </div>
-          {activity.description && (
-            <p className="text-slate-600 text-sm">{activity.description}</p>
-          )}
+          {activity.description && <p className="text-slate-600 text-sm">{activity.description}</p>}
           <div className="flex flex-wrap gap-4 text-sm">
             <div className="flex items-center gap-1">
               <ClipboardList size={16} className="text-slate-400" />
@@ -306,18 +298,18 @@ export default function ActivityDetail() {
             )}
           </div>
           <div className="flex flex-wrap gap-2 pt-2">
-            {activity.status === "draft" && (
-              <Button size="sm" onClick={() => handleStatusChange("published")}>انتشار</Button>
-            )}
-            {activity.status === "published" && (
-              <Button size="sm" onClick={() => handleStatusChange("in_progress")}>شروع</Button>
-            )}
+            {activity.status === "draft" && <Button size="sm" onClick={() => handleStatusChange("published")}>انتشار</Button>}
+            {activity.status === "published" && <Button size="sm" onClick={() => handleStatusChange("in_progress")}>شروع</Button>}
+            {activity.status === "in_progress" && <Button size="sm" onClick={() => handleStatusChange("submitted")}>ارسال برای بررسی</Button>}
             {activity.status === "submitted" && (
-              <Button size="sm" variant="outline" onClick={() => handleStatusChange("completed")}>تکمیل</Button>
+              <>
+                <Button variant="outline" size="sm" onClick={() => handleStatusChange("needs_revision")}>نیاز به اصلاح</Button>
+                <Button size="sm" onClick={() => handleStatusChange("approved")}>تأیید</Button>
+              </>
             )}
-            {(activity.status === "completed" || activity.status === "approved") && (
-              <Button size="sm" variant="outline" onClick={() => handleStatusChange("archived")}>بایگانی</Button>
-            )}
+            {activity.status === "needs_revision" && <Button size="sm" onClick={() => handleStatusChange("in_progress")}>بازگشت به انجام</Button>}
+            {activity.status === "approved" && <Button size="sm" onClick={() => handleStatusChange("completed")}>تکمیل</Button>}
+            {(activity.status === "completed" || activity.status === "approved") && <Button size="sm" variant="outline" onClick={handleArchive}>بایگانی</Button>}
           </div>
         </CardContent>
       </Card>
@@ -333,38 +325,54 @@ export default function ActivityDetail() {
 
         {/* تب واگذاری */}
         <TabsContent value="assign">
-          <Card className="glass-card">
-            <CardHeader><CardTitle className="text-lg">واگذاری جدید</CardTitle></CardHeader>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">ارجاع به کاربر دیگر</CardTitle>
+              <CardDescription>
+                کاربری را که می‌خواهید این فعالیت را به او ارجاع دهید، جستجو و انتخاب کنید.
+              </CardDescription>
+            </CardHeader>
             <CardContent>
-              <form onSubmit={handleAssign} className="space-y-3">
-                <Input
-                  placeholder="شناسه کاربر (کد ملی یا UUID)"
-                  value={assigneeId}
-                  onChange={(e) => setAssigneeId(e.target.value)}
-                  required
+              <form onSubmit={handleAssign} className="space-y-4">
+                <UserSearch
+                  onChange={(userId, user) => setSelectedAssignee({ id: userId, user })}
+                  placeholder="نام یا کد ملی کاربر را وارد کنید..."
+                  excludeIds={assignments.map(a => a.assignee_id)}
                 />
-                <select
-                  className="w-full border rounded-lg px-3 py-2 bg-white"
-                  value={assignRole}
-                  onChange={(e) => setAssignRole(e.target.value)}
-                >
-                  <option value="executor">مجری</option>
-                  <option value="reviewer">بازبین</option>
-                </select>
-                <Button type="submit" className="w-full">واگذار کن</Button>
+                <Button type="submit" className="w-full" disabled={!selectedAssignee}>
+                  ارجاع به کاربر انتخاب‌شده
+                </Button>
               </form>
-              <div className="mt-4">
-                <h3 className="font-medium mb-2">واگذاری‌های فعلی</h3>
+
+              <div className="mt-6">
+                <h4 className="text-sm font-medium mb-3">ارجاع‌های فعلی</h4>
                 {assignments.length === 0 ? (
-                  <p className="text-sm text-slate-400">هنوز واگذاری‌ای ثبت نشده.</p>
+                  <p className="text-sm text-muted-foreground">هیچ ارجاعی ثبت نشده است</p>
                 ) : (
-                  <ul className="space-y-2">
+                  <div className="space-y-2">
                     {assignments.map((a) => (
-                      <li key={a.id} className="text-sm border-b pb-1">
-                        کاربر {a.assignee_id} ({a.role})
-                      </li>
+                      <div key={a.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                              {a.assignee_name?.split(" ").map(n => n[0]).join("").substring(0, 2) || "??"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="text-sm font-medium">{a.assignee_name || "کاربر ناشناس"}</p>
+                            <p className="text-xs text-muted-foreground">
+                              وضعیت: {a.status === "assigned" ? "ارجاع‌شده" : a.status === "in_progress" ? "در حال انجام" : a.status === "done" ? "انجام‌شده" : a.status || "نامشخص"}
+                            </p>
+                          </div>
+                        </div>
+                        {a.reply_deadline_time && (
+                          <Badge variant="outline" className="text-xs">
+                            مهلت: {new Date(a.reply_deadline_time).toLocaleDateString("fa-IR")}
+                          </Badge>
+                        )}
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 )}
               </div>
             </CardContent>
@@ -377,12 +385,7 @@ export default function ActivityDetail() {
             <CardHeader><CardTitle className="text-lg">ثبت پاسخ</CardTitle></CardHeader>
             <CardContent>
               <form onSubmit={handleResponse} className="space-y-3">
-                <Textarea
-                  placeholder="پاسخ خود را بنویسید..."
-                  value={responseBody}
-                  onChange={(e) => setResponseBody(e.target.value)}
-                  required
-                />
+                <Textarea placeholder="پاسخ خود را بنویسید..." value={responseBody} onChange={(e) => setResponseBody(e.target.value)} required />
                 <Button type="submit" className="w-full">ارسال پاسخ</Button>
               </form>
               <div className="mt-4">
@@ -416,22 +419,9 @@ export default function ActivityDetail() {
                 </div>
               ) : (
                 <form onSubmit={handleEvaluation} className="space-y-3">
-                  <Input
-                    type="number"
-                    placeholder="امتیاز (۰ تا ۱۰۰)"
-                    value={evalScore}
-                    onChange={(e) => setEvalScore(e.target.value)}
-                  />
-                  <Textarea
-                    placeholder="بازخورد..."
-                    value={evalNote}
-                    onChange={(e) => setEvalNote(e.target.value)}
-                  />
-                  <select
-                    className="w-full border rounded-lg px-3 py-2 bg-white"
-                    value={evalStatus}
-                    onChange={(e) => setEvalStatus(e.target.value)}
-                  >
+                  <Input type="number" placeholder="امتیاز (۰ تا ۱۰۰)" value={evalScore} onChange={(e) => setEvalScore(e.target.value)} />
+                  <Textarea placeholder="بازخورد..." value={evalNote} onChange={(e) => setEvalNote(e.target.value)} />
+                  <select className="w-full border rounded-lg px-3 py-2 bg-white" value={evalStatus} onChange={(e) => setEvalStatus(e.target.value)}>
                     <option value="approved">تأیید</option>
                     <option value="needs_revision">نیاز به اصلاح</option>
                   </select>
