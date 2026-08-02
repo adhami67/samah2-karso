@@ -1,3 +1,4 @@
+# app/services/report_service.py
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
 from sqlalchemy.orm import Session
@@ -5,6 +6,8 @@ from sqlalchemy import func
 from app.models.work import Work
 from app.models.work_receiver import WorkReceiver
 from app.models.timeline_event import TimelineEvent
+from app.models.security import User
+from app.models.work_group import WorkGroup
 from app.core.constants import (
     WORK_STATUS_COMPLETED,
     WORK_STATUS_ARCHIVED,
@@ -12,6 +15,7 @@ from app.core.constants import (
     WORK_STATUS_SUBMITTED,
     WORK_STATUS_NEEDS_REVISION,
     WORK_STATUS_APPROVED,
+    WORK_STATUS_PUBLISHED,
     WORK_RECEIVER_STATUS_DONE,
     WORK_RECEIVER_STATUS_FINISHED,
 )
@@ -22,50 +26,57 @@ class ReportService:
         self.db = db
 
     def get_user_stats(self, user_id: str) -> Dict:
-        """آمار کلی برای یک کاربر (مجری)"""
-        receivers = (
-            self.db.query(WorkReceiver)
-            .filter(WorkReceiver.receiver_user_id == user_id)
-            .all()
+        """آمار شخصی کاربر (منطبق با MySummary در داشبورد)"""
+        # پایه: همهٔ فعالیت‌هایی که کاربر به عنوان مجری دارد
+        base_query = self.db.query(Work).join(Work.work_receivers).filter(
+            WorkReceiver.receiver_user_id == user_id,
+            Work.is_deleted == False
         )
 
-        total = len(receivers)
-        completed = sum(1 for r in receivers if r.status == WORK_RECEIVER_STATUS_FINISHED)
-        in_progress = sum(1 for r in receivers if r.status == WORK_RECEIVER_STATUS_IN_PROGRESS)
-        done = sum(1 for r in receivers if r.status == WORK_RECEIVER_STATUS_DONE)
+        total = base_query.count()
+        in_progress = base_query.filter(Work.status == WORK_STATUS_IN_PROGRESS).count()
+        submitted = base_query.filter(Work.status == WORK_STATUS_SUBMITTED).count()
+        needs_revision = base_query.filter(Work.status == WORK_STATUS_NEEDS_REVISION).count()
+        approved = base_query.filter(Work.status == WORK_STATUS_APPROVED).count()
+        completed = base_query.filter(Work.status == WORK_STATUS_COMPLETED).count()
 
-        avg_time = None
-        finished_receivers = [r for r in receivers if r.finished_time and r.created_at]
-        if finished_receivers:
-            total_seconds = sum(
-                (r.finished_time - r.created_at).total_seconds()
-                for r in finished_receivers
-            )
-            avg_seconds = total_seconds / len(finished_receivers)
-            avg_time = timedelta(seconds=avg_seconds)
+        # میانگین امتیاز از WorkReceiver (اگر فیلد score داشته باشد)
+        avg_score = self.db.query(func.avg(WorkReceiver.score)).filter(
+            WorkReceiver.receiver_user_id == user_id,
+            WorkReceiver.score.isnot(None)
+        ).scalar()
 
         return {
-            "total_assigned": total,
-            "completed": completed,
+            "total_activities": total,
             "in_progress": in_progress,
-            "done": done,
-            "average_completion_time": str(avg_time) if avg_time else None,
+            "submitted": submitted,
+            "needs_revision": needs_revision,
+            "approved": approved,
+            "completed": completed,
+            "average_score": round(float(avg_score), 2) if avg_score else None,
         }
 
     def get_system_stats(self) -> Dict:
-        """آمار کلی سیستم برای مدیران"""
-        total_works = self.db.query(Work).filter(Work.is_deleted == False).count()
-        total_receivers = self.db.query(WorkReceiver).filter(WorkReceiver.is_deleted == False).count()
-
-        status_counts = {}
-        for status in [WORK_STATUS_IN_PROGRESS, WORK_STATUS_SUBMITTED, WORK_STATUS_NEEDS_REVISION, WORK_STATUS_APPROVED, WORK_STATUS_COMPLETED, WORK_STATUS_ARCHIVED]:
-            count = self.db.query(Work).filter(Work.status == status, Work.is_deleted == False).count()
-            status_counts[status] = count
+        """آمار کلی سیستم (برای صفحه گزارش‌های مدیریتی)"""
+        total_users = self.db.query(User).filter(User.is_active == True).count()
+        total_workspaces = self.db.query(WorkGroup).filter(WorkGroup.is_deleted == False).count()
+        total_activities = self.db.query(Work).filter(Work.is_deleted == False).count()
+        total_overdue = self.db.query(Work).filter(
+            Work.due_at < datetime.now(timezone.utc),
+            Work.status.in_([
+                WORK_STATUS_PUBLISHED,
+                WORK_STATUS_IN_PROGRESS,
+                WORK_STATUS_SUBMITTED,
+                WORK_STATUS_NEEDS_REVISION
+            ]),
+            Work.is_deleted == False
+        ).count()
 
         return {
-            "total_works": total_works,
-            "total_receivers": total_receivers,
-            "status_distribution": status_counts,
+            "total_users": total_users,
+            "total_workspaces": total_workspaces,
+            "total_activities": total_activities,
+            "total_overdue": total_overdue,
         }
 
     def get_today_activities(self, user_id: str) -> List[Work]:
@@ -125,7 +136,6 @@ class ReportService:
             total_seconds = 0
             count = 0
             for w in completed_works:
-                # پیدا کردن رویداد تکمیل از TimelineEvent
                 finished_event = (
                     self.db.query(TimelineEvent)
                     .filter(

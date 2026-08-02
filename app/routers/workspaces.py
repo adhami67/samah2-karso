@@ -9,7 +9,7 @@ from app.utils.deps import get_current_user
 from datetime import datetime
 from typing import List
 
-router = APIRouter(prefix="/api/workspaces", tags=["workspaces"])
+router = APIRouter(tags=["workspaces"])
 
 # ---------- ایجاد حوزه ----------
 @router.post("", response_model=WorkspaceRead, status_code=status.HTTP_201_CREATED)

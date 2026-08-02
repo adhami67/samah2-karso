@@ -1,18 +1,14 @@
+// frontend/src/pages/Dashboard.tsx
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import {
-  Clock,
-  AlertTriangle,
-  CheckCircle,
-  Calendar,
-} from "lucide-react";
+import { Clock, AlertTriangle, CheckCircle, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 
-// اینترفیس‌ها بدون تغییر
+// اینترفیس‌ها
 interface Activity {
   id: string;
   subject: string;
@@ -20,6 +16,8 @@ interface Activity {
   due_at: string | null;
   activity_type: string;
 }
+
+// تطبیق با خروجی واقعی get_user_stats از report_service
 interface MySummary {
   total_activities: number;
   in_progress: number;
@@ -32,18 +30,16 @@ interface MySummary {
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 },
-  },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
 };
+
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 },
 };
 
 export default function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [todayActivities, setTodayActivities] = useState<Activity[]>([]);
   const [overdueActivities, setOverdueActivities] = useState<Activity[]>([]);
   const [summary, setSummary] = useState<MySummary | null>(null);
@@ -51,14 +47,14 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
 
-// بخش fetchData را به این شکل تغییر دهید
+  // دریافت همزمان اطلاعات شخصی
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const [today, overdue, sum] = await Promise.all([
         api.get<Activity[]>("/activities/my/today").catch(() => []),
         api.get<Activity[]>("/activities/my/overdue").catch(() => []),
-        api.get<MySummary>("/reports/my-summary").catch(() => ({
+        api.get<MySummary>("/reports/my/stats").catch(() => ({
           total_activities: 0,
           in_progress: 0,
           submitted: 0,
@@ -78,7 +74,7 @@ export default function Dashboard() {
     }
   }, []);
 
-  // راز اصلی: رفرش خودکار هنگام بازگشت به صفحه
+  // رفرش خودکار هنگام بازگشت به صفحه (اختیاری)
   useEffect(() => {
     fetchData();
   }, [fetchData, location.key]);
@@ -142,9 +138,7 @@ export default function Dashboard() {
                       </div>
                     )}
                   </div>
-                  <span className="text-xs text-rose-600 bg-rose-50 px-2 py-1 rounded-full">
-                    عقب‌افتاده
-                  </span>
+                  <span className="text-xs text-rose-600 bg-rose-50 px-2 py-1 rounded-full">عقب‌افتاده</span>
                 </CardContent>
               </Card>
             ))}
@@ -152,7 +146,7 @@ export default function Dashboard() {
         </motion.div>
       )}
 
-      {/* کارت‌های آماری */}
+      {/* کارت‌های آماری (هماهنگ با get_user_stats) */}
       {summary && (
         <motion.div
           variants={containerVariants}

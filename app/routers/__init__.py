@@ -1,6 +1,5 @@
 # app/routers/__init__.py
 
-# روت‌های جدید
 from app.routers import health
 from app.routers import auth
 from app.routers import bootstrap
@@ -11,7 +10,5 @@ from app.routers import work_message_router
 from app.routers import work_attachment_router
 from app.routers import report_router
 from app.routers import notification_router
-
-# روت‌های قدیمی (فقط workspaces برای شروع)
 from app.routers import workspaces
-# from app.routers import activities   # ← این خط را کامنت کنید
+# from app.routers import activities
