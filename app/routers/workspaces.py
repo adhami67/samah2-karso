@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 from app.db.deps import get_db
 from app.models.work_group import WorkGroup
 from app.models.work_group_member import WorkGroupMember
 from app.models.security import User
 from app.schemas.workspace import WorkspaceCreate, WorkspaceRead, WorkspaceUpdate, WorkspaceMemberRead
 from app.utils.deps import get_current_user
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List
 
 router = APIRouter(tags=["workspaces"])
@@ -52,7 +53,7 @@ def _create_workspace(payload: WorkspaceCreate, db: Session, current_user: User)
     member = WorkGroupMember(
         work_group_id=workspace.id,
         member_user_id=current_user.id,
-        join_time=datetime.utcnow()
+        join_time=datetime.now(timezone.utc)
     )
     db.add(member)
     db.commit()
@@ -67,10 +68,11 @@ def list_workspaces(
     current_user: User = Depends(get_current_user)
 ):
     """دریافت لیست حوزه‌هایی که کاربر عضو یا مدیر آن است"""
-    subquery = db.query(WorkGroupMember.work_group_id).filter(
+    # ✅ اصلاح: استفاده از select() به جای subquery()
+    subquery = select(WorkGroupMember.work_group_id).where(
         WorkGroupMember.member_user_id == current_user.id,
         WorkGroupMember.is_deleted == False
-    ).subquery()
+    )
 
     workspaces = db.query(WorkGroup).filter(
         WorkGroup.is_deleted == False,
@@ -145,7 +147,7 @@ def delete_workspace(
         raise HTTPException(status_code=400, detail="حوزه دارای کارهای فعال است و قابل حذف نیست")
 
     workspace.is_deleted = True
-    workspace.deleted_at = datetime.utcnow()
+    workspace.deleted_at = datetime.now(timezone.utc)
     db.commit()
 
 # ---------- مدیریت اعضا ----------
@@ -178,7 +180,7 @@ def add_member(
     member = WorkGroupMember(
         work_group_id=workspace_id,
         member_user_id=user_id,
-        invite_time=datetime.utcnow()
+        invite_time=datetime.now(timezone.utc)
     )
     db.add(member)
     db.commit()
@@ -220,7 +222,7 @@ def remove_member(
         raise HTTPException(status_code=400, detail="مدیر حوزه نمی‌تواند خود را حذف کند. ابتدا مدیریت را به دیگری واگذار کنید.")
 
     member.is_deleted = True
-    member.deleted_at = datetime.utcnow()
+    member.deleted_at = datetime.now(timezone.utc)
     db.commit()
 
 @router.get("/{workspace_id}/members", response_model=List[WorkspaceMemberRead])

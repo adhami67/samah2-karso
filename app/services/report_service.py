@@ -26,7 +26,6 @@ class ReportService:
 
     def get_user_stats(self, user_id: str) -> Dict:
         """آمار شخصی کاربر (منطبق با MySummary در داشبورد)"""
-        # پایه: همهٔ فعالیت‌هایی که کاربر به عنوان مجری دارد
         base_query = self.db.query(Work).join(Work.work_receivers).filter(
             WorkReceiver.receiver_user_id == user_id,
             Work.is_deleted == False
@@ -39,7 +38,6 @@ class ReportService:
         approved = base_query.filter(Work.status == WORK_STATUS_APPROVED).count()
         completed = base_query.filter(Work.status == WORK_STATUS_COMPLETED).count()
 
-        # ✅ اصلاح: اگر فیلد score وجود نداشته باشد، خطا نمی‌دهد
         avg_score = None
         try:
             avg_score = self.db.query(func.avg(WorkReceiver.score)).filter(
@@ -47,7 +45,6 @@ class ReportService:
                 WorkReceiver.score.isnot(None)
             ).scalar()
         except AttributeError:
-            # فیلد score در مدل WorkReceiver وجود ندارد
             pass
 
         return {
@@ -161,4 +158,42 @@ class ReportService:
             "completed": completed,
             "completion_rate": (completed / total * 100) if total > 0 else 0,
             "average_completion_time": str(avg_time) if avg_time else None,
+        }
+
+    def get_today_priorities(self, user_id: str) -> dict:
+        """اولویت‌های امروز کاربر را برمی‌گرداند"""
+        now = datetime.now(timezone.utc)
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        today_end = today_start + timedelta(days=1)
+
+        overdue = self.db.query(Work).join(Work.work_receivers).filter(
+            WorkReceiver.receiver_user_id == user_id,
+            Work.due_at < now,
+            Work.status.in_([WORK_STATUS_PUBLISHED, WORK_STATUS_IN_PROGRESS, WORK_STATUS_SUBMITTED, WORK_STATUS_NEEDS_REVISION]),
+            Work.is_deleted == False
+        ).count()
+
+        due_today = self.db.query(Work).join(Work.work_receivers).filter(
+            WorkReceiver.receiver_user_id == user_id,
+            Work.due_at.between(today_start, today_end),
+            Work.status.in_([WORK_STATUS_PUBLISHED, WORK_STATUS_IN_PROGRESS, WORK_STATUS_SUBMITTED, WORK_STATUS_NEEDS_REVISION]),
+            Work.is_deleted == False
+        ).count()
+
+        unread_messages = 0
+        try:
+            from app.models.work_message import WorkMessage
+            unread_messages = self.db.query(WorkMessage).filter(
+                WorkMessage.sender_user_id != user_id,
+                WorkMessage.is_deleted == False
+            ).count()
+        except ImportError:
+            pass
+
+        return {
+            "overdue": overdue,
+            "due_today": due_today,
+            "unread_messages": unread_messages,
+            "classes_today": 0,
+            "needs_review": 0,
         }
