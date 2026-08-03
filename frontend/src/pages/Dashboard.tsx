@@ -8,7 +8,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Clock, AlertTriangle, CheckCircle, Calendar, Users, BookOpen } from "lucide-react";
 import { motion } from "framer-motion";
 import { PriorityList } from "@/components/PriorityList";
+import { ImportantNotifications } from "@/components/ImportantNotifications";
 import { toast } from "sonner";
+import { StudentsNeedingFollowUp } from "@/components/StudentsNeedingFollowUp";
 
 // اینترفیس‌ها
 interface Activity {
@@ -129,6 +131,8 @@ export default function Dashboard() {
           </span>
         </div>
         <PriorityList />
+        <ImportantNotifications />
+        <StudentsNeedingFollowUp />
       </motion.div>
 
       {/* ===== دو ستون: برنامه هفتگی + خلاصه وضعیت ===== */}

@@ -25,7 +25,9 @@ export function NotificationBell() {
   const fetchNotifications = async () => {
     try {
       const [list, count] = await Promise.all([
+        // ✅ بدون اسلش انتهایی
         api.get<Notification[]>("/notifications?limit=20"),
+        // ✅ بدون اسلش انتهایی
         api.get<{ count: number }>("/notifications/unread-count"),
       ]);
       setNotifications(list);
@@ -37,7 +39,8 @@ export function NotificationBell() {
 
   const markAsRead = async (id: string) => {
     try {
-      await api.put(`/notifications/${id}/read`, {});
+      // ✅ بدون اسلش انتهایی
+      await api.patch(`/notifications/${id}/read`, {});
       setNotifications((prev) =>
         prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
       );
@@ -49,6 +52,7 @@ export function NotificationBell() {
 
   const markAllAsRead = async () => {
     try {
+      // ✅ بدون اسلش انتهایی
       await api.post("/notifications/read-all", {});
       setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
       setUnreadCount(0);

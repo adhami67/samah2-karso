@@ -14,3 +14,4 @@ from app.models.notification import Notification
 from app.models.timeline_event import TimelineEvent
 from app.models.evaluation import Evaluation
 from app.models.response import Response
+from app.models.student_note import StudentNote

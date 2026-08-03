@@ -44,7 +44,7 @@ app.include_router(work_attachment_router.router)
 app.include_router(report_router.router, prefix="/api/reports", tags=["Reports"])
 
 # ✅ اصلاح: پیشوند /api/notifications اضافه شد
-app.include_router(notification_router.router, prefix="/api/notifications", tags=["Notifications"])
+app.include_router(notification_router.router, tags=["Notifications"])
 
 app.include_router(bulk_upload.router, prefix="/api/bulk", tags=["Bulk"])
 app.include_router(responses.router, prefix="/api/responses", tags=["Responses"])
