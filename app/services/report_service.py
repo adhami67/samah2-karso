@@ -1,4 +1,3 @@
-# app/services/report_service.py
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
 from sqlalchemy.orm import Session
@@ -40,11 +39,16 @@ class ReportService:
         approved = base_query.filter(Work.status == WORK_STATUS_APPROVED).count()
         completed = base_query.filter(Work.status == WORK_STATUS_COMPLETED).count()
 
-        # میانگین امتیاز از WorkReceiver (اگر فیلد score داشته باشد)
-        avg_score = self.db.query(func.avg(WorkReceiver.score)).filter(
-            WorkReceiver.receiver_user_id == user_id,
-            WorkReceiver.score.isnot(None)
-        ).scalar()
+        # ✅ اصلاح: اگر فیلد score وجود نداشته باشد، خطا نمی‌دهد
+        avg_score = None
+        try:
+            avg_score = self.db.query(func.avg(WorkReceiver.score)).filter(
+                WorkReceiver.receiver_user_id == user_id,
+                WorkReceiver.score.isnot(None)
+            ).scalar()
+        except AttributeError:
+            # فیلد score در مدل WorkReceiver وجود ندارد
+            pass
 
         return {
             "total_activities": total,

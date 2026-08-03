@@ -1,10 +1,10 @@
-// frontend/src/components/MainLayout.tsx
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { motion } from "framer-motion";
 import { Sidebar } from "./Sidebar";
+import { NotificationBell } from "./NotificationBell";
 
 export default function MainLayout() {
   const { user, logout } = useAuth();
@@ -12,12 +12,9 @@ export default function MainLayout() {
 
   return (
     <div className="min-h-screen flex bg-slate-50/50 relative">
-      {/* سایدبار */}
       <Sidebar />
 
-      {/* محتوای اصلی */}
       <div className="flex-1 flex flex-col min-h-screen">
-        {/* هدر */}
         <motion.header
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -31,18 +28,21 @@ export default function MainLayout() {
               {user?.full_name || "کاربر"}
             </span>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={logout}
-            className="text-slate-500 hover:text-red-500 gap-1"
-          >
-            <LogOut size={18} />
-            <span className="hidden sm:inline text-sm">خروج</span>
-          </Button>
+
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={logout}
+              className="text-slate-500 hover:text-red-500 gap-1"
+            >
+              <LogOut size={18} />
+              <span className="hidden sm:inline text-sm">خروج</span>
+            </Button>
+          </div>
         </motion.header>
 
-        {/* محتوای صفحات */}
         <motion.main
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}

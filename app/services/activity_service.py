@@ -1,11 +1,10 @@
-# app/services/activity_service.py
 from datetime import datetime, timezone
 from typing import Optional, List
 from sqlalchemy.orm import Session
 from app.models.work import Work
 from app.models.work_receiver import WorkReceiver
 from app.models.work_group import WorkGroup
-from app.models.security import User  # توجه: مسیر User اصلاح شده
+from app.models.security import User
 from app.models.timeline_event import TimelineEvent
 from app.schemas.activity import ActivityCreate
 from app.core.constants import (
@@ -56,6 +55,18 @@ class ActivityService:
             note="کار جدید ایجاد شد",
         )
         self.db.add(event)
+
+        # ایجاد اعلان برای همه مجریان
+        from app.services.notification_service import NotificationService
+        from app.schemas.notification import NotificationCreate
+        notif_service = NotificationService(self.db)
+        for user_id in data.receiver_user_ids:
+            notif_service.create(NotificationCreate(
+                user_id=user_id,
+                title="ارجاع جدید",
+                body=f"فعالیت '{data.subject}' به شما ارجاع شد",
+                link=f"/activities/{work.id}"
+            ))
 
         self.db.commit()
         self.db.refresh(work)
@@ -114,6 +125,17 @@ class ActivityService:
             note=f"کار به کاربر {user.full_name} ارجاع شد",
         )
         self.db.add(event)
+
+        # ایجاد اعلان برای کاربر جدید
+        from app.services.notification_service import NotificationService
+        from app.schemas.notification import NotificationCreate
+        notif_service = NotificationService(self.db)
+        notif_service.create(NotificationCreate(
+            user_id=receiver_user_id,
+            title="ارجاع جدید",
+            body=f"فعالیت '{work.subject}' به شما ارجاع شد",
+            link=f"/activities/{work_id}"
+        ))
 
         self.db.commit()
         self.db.refresh(receiver)

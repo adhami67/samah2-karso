@@ -41,11 +41,17 @@ app.include_router(timeline.router, prefix="/api/timeline", tags=["Timeline"])
 app.include_router(workflow_router.router)
 app.include_router(work_message_router.router)
 app.include_router(work_attachment_router.router)
-app.include_router(report_router.router, prefix="/api/reports", tags=["Reports"])   # ← اصلاح‌شده
-app.include_router(notification_router.router)
+app.include_router(report_router.router, prefix="/api/reports", tags=["Reports"])
+
+# ✅ اصلاح: پیشوند /api/notifications اضافه شد
+app.include_router(notification_router.router, prefix="/api/notifications", tags=["Notifications"])
+
 app.include_router(bulk_upload.router, prefix="/api/bulk", tags=["Bulk"])
 app.include_router(responses.router, prefix="/api/responses", tags=["Responses"])
 
 # ========== روت‌های قدیمی ==========
-app.include_router(workspaces.router, prefix="/api/workspaces", tags=["Workspaces"])  # فقط یک بار
+app.include_router(workspaces.router, prefix="/api/workspaces", tags=["Workspaces"])
 app.include_router(activities.router, prefix="/api/activities", tags=["Activities"])
+
+# ❌ خط تکراری زیر حذف شده است:
+# app.include_router(notification_router.router)
