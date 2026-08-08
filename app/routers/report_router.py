@@ -53,3 +53,11 @@ def get_students_needing_follow_up(
 ):
     """دریافت لیست دانش‌آموزانی که نیاز به پیگیری دارند"""
     return service.get_students_needing_follow_up(str(current_user.id))
+
+@router.get("/students/list")
+def get_students_list(
+    service: StudentService = Depends(get_student_service),
+    current_user: User = Depends(get_current_user)
+):
+    """دریافت لیست تمام دانش‌آموزان برای انتخاب در کامپوننت QuickNote"""
+    return service.get_all_students()

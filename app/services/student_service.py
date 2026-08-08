@@ -1,10 +1,10 @@
 # app/services/student_service.py
 from sqlalchemy.orm import Session
-from app.models.security import User
+from app.models.security import User, Role  # ✅ اضافه کردن Role
 from app.models.work import Work
 from app.models.work_receiver import WorkReceiver
 from app.core.constants import WORK_STATUS_IN_PROGRESS, WORK_STATUS_SUBMITTED, WORK_STATUS_NEEDS_REVISION
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import List, Dict
 
 class StudentService:
@@ -56,3 +56,24 @@ class StudentService:
         # مرتب‌سازی بر اساس تعداد فعالیت‌های معوق (بیشترین اولویت)
         result.sort(key=lambda x: x["overdue_count"], reverse=True)
         return result
+
+    def get_all_students(self) -> List[Dict]:
+        """
+        دریافت لیست تمام دانش‌آموزان (برای استفاده در کامپوننت QuickNote)
+        """
+        # ✅ اصلاح: استفاده از Role.code == "student"
+        students = self.db.query(User).join(User.roles).filter(
+            User.is_active == True,
+            Role.code == "student"  # یا Role.name == "شاگرد" اگر ترجیح می‌دهید
+        ).all()
+
+        return [
+            {
+                "id": str(s.id),
+                "full_name": s.full_name,
+                "national_id": s.national_id,
+                "grade": s.grade,
+                "class_name": s.class_name,
+            }
+            for s in students
+        ]

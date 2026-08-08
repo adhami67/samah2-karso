@@ -18,6 +18,7 @@ from app.routers import (
     activities,
     responses,
     bulk_upload,
+    student_note_router,
 )
 
 Base.metadata.create_all(bind=engine)
@@ -41,6 +42,7 @@ app.include_router(timeline.router, prefix="/api/timeline", tags=["Timeline"])
 app.include_router(workflow_router.router)
 app.include_router(work_message_router.router)
 app.include_router(work_attachment_router.router)
+app.include_router(student_note_router.router)
 app.include_router(report_router.router, prefix="/api/reports", tags=["Reports"])
 
 # ✅ اصلاح: پیشوند /api/notifications اضافه شد

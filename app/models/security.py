@@ -52,5 +52,9 @@ class User(TimestampedUUIDModel):
     address: Mapped[str | None] = mapped_column(String(500), nullable=True)
     birth_date: Mapped[str | None] = mapped_column(String(20), nullable=True)
     gender: Mapped[str | None] = mapped_column(String(10), nullable=True)
-
+    father_last_name: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    mother_last_name: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    major: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    academic_year: Mapped[str | None] = mapped_column(String(20), nullable=True)
     roles = relationship("Role", secondary=user_roles, backref="users")
+    

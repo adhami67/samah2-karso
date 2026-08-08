@@ -95,7 +95,6 @@ def delete_role(
 
     db.delete(role)
     db.commit()
-    # در صورت نیاز به return، می‌توانید Response(None, status_code=204) برگردانید
 
 # ---------- کاربران ----------
 @router.post("/users", response_model=UserRead, status_code=201)
@@ -142,6 +141,21 @@ def list_users(
 ):
     return db.query(User).order_by(User.created_at.desc()).all()
 
+# ✅ اضافه شدن اندپوینت GET /users/{user_id}
+@router.get("/users/{user_id}", response_model=UserRead)
+def get_user(
+    user_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("system_admin"))
+):
+    """
+    دریافت اطلاعات یک کاربر با شناسه
+    """
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="کاربر یافت نشد")
+    return user
+
 @router.patch("/users/{user_id}", response_model=UserRead)
 def update_user(
     user_id: str,
@@ -155,7 +169,7 @@ def update_user(
     
     for field in ["full_name", "username", "is_active", "grade", "class_name",
                   "father_name", "mother_name", "parent_phone", "phone",
-                  "address", "birth_date", "gender"]:
+                  "address", "birth_date", "gender", "father_last_name", "mother_last_name", "major", "academic_year"]:
         value = getattr(payload, field, None)
         if value is not None:
             setattr(user, field, value)

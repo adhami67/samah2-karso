@@ -11,6 +11,8 @@ import { PriorityList } from "@/components/PriorityList";
 import { ImportantNotifications } from "@/components/ImportantNotifications";
 import { toast } from "sonner";
 import { StudentsNeedingFollowUp } from "@/components/StudentsNeedingFollowUp";
+import { QuickNote } from "@/components/QuickNote";
+
 
 // اینترفیس‌ها
 interface Activity {
@@ -133,6 +135,8 @@ export default function Dashboard() {
         <PriorityList />
         <ImportantNotifications />
         <StudentsNeedingFollowUp />
+        <QuickNote />
+
       </motion.div>
 
       {/* ===== دو ستون: برنامه هفتگی + خلاصه وضعیت ===== */}

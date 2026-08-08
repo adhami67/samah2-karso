@@ -16,8 +16,19 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: "Request failed" }));
-    throw new Error(error.detail || "Request failed");
+    let errorMessage = "Request failed";
+    try {
+      const error = await response.json();
+      errorMessage = error.detail || errorMessage;
+    } catch {
+      // اگر پاسخ JSON نبود، پیام پیش‌فرض را نگه دار
+    }
+    throw new Error(errorMessage);
+  }
+
+  // ✅ اگر Status 204 بود، بدنه را پارس نکن
+  if (response.status === 204) {
+    return {} as T;
   }
 
   return response.json();

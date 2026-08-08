@@ -13,6 +13,7 @@ import StudentsGrouped from "@/pages/StudentsGrouped";
 import { Toaster } from "sonner"; // اضافه کنید
 import Workspaces from "@/pages/Workspaces";
 import Reports from "@/pages/Reports";
+import StudentProfile from "@/pages/StudentProfile";
 
 
 
@@ -46,7 +47,7 @@ function App() {
             <Route path="/students" element={<StudentsGrouped />} />
             <Route path="/workspaces" element={<Workspaces />} />
             <Route path="/reports" element={<Reports />} />
-
+            <Route path="/students/:id" element={<StudentProfile />} />
             {/* مسیرهای جدید برای آینده */}
             <Route path="/people" element={<div>صفحه اشخاص</div>} />
             <Route path="/calendar" element={<div>صفحه تقویم</div>} />

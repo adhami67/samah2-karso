@@ -65,6 +65,10 @@ class UserUpdate(BaseModel):
     birth_date: Optional[str] = None
     gender: Optional[str] = None
     role_ids: Optional[List[str]] = None
+    father_last_name: Optional[str] = None
+    mother_last_name: Optional[str] = None
+    major: Optional[str] = None
+    academic_year: Optional[str] = None
 
 class UserRead(BaseModel):
     id: str
@@ -82,6 +86,10 @@ class UserRead(BaseModel):
     address: Optional[str] = None
     birth_date: Optional[str] = None
     gender: Optional[str] = None
+    father_last_name: Optional[str] = None
+    mother_last_name: Optional[str] = None
+    major: Optional[str] = None
+    academic_year: Optional[str] = None
 
     class Config:
         from_attributes = True
